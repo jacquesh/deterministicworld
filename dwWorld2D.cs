@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace DeterministicWorld
 {
-    public class dwWorld2D
+    public abstract class dwWorld2D
     {
         public static int FPS = 20;
 
@@ -24,7 +24,6 @@ namespace DeterministicWorld
         private FrameInput currentFrameInput;
 
         private Thread simulationThread;
-
 
         private Dictionary<uint, FrameInput> inputData;
 
@@ -57,7 +56,7 @@ namespace DeterministicWorld
             }
         }
 
-        public void issueOrder(dwObject2D obj, Order issuedOrder)
+        public virtual void issueOrder(dwObject2D obj, Order issuedOrder)
         {
             obj.issueOrder(issuedOrder);
             
@@ -103,6 +102,7 @@ namespace DeterministicWorld
         {
             running = true;
 
+            initialize();
             while (running)
             {
                 if (!paused)
@@ -113,7 +113,12 @@ namespace DeterministicWorld
             }
         }
 
-        public void update()
+        private void initialize()
+        {
+            worldStart();
+        }
+
+        private void update()
         {
             //Call an update on all of the world's objects
             for (int i = 0; i < objects.Count; i++)
@@ -122,6 +127,8 @@ namespace DeterministicWorld
 
                 currentObject.update_internal();
             }
+
+            worldUpdate();
 
             //Call any specified external update functions
             if (onWorldUpdate != null)
@@ -144,6 +151,9 @@ namespace DeterministicWorld
 
             return emptyInput;
         }
+
+        protected abstract void worldStart();
+        protected abstract void worldUpdate();
     }
 
     internal class FrameInput

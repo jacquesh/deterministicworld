@@ -21,7 +21,12 @@ namespace DeterministicWorld.Net
         //Accessor Properties
         public NetConnectionStatus connectionStatus
         {
-            get { return connectionStatus; }
+            get { return _connectionStatus; }
+        }
+
+        public int playerCount
+        {
+            get { return playerList.Count; }
         }
 
         //Network connection and settings

@@ -14,7 +14,7 @@ namespace DeterministicWorld
             orderQueue = new Queue<Order>();
         }
 
-        public virtual void issueOrder(Order newOrder)
+        internal virtual void issueOrder(Order newOrder)
         {
             if (orderQueue.Count == 0)
             {
