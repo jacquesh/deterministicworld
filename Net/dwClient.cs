@@ -24,18 +24,12 @@ namespace DeterministicWorld.Net
             get { return _connectionStatus; }
         }
 
-        public int playerCount
-        {
-            get { return playerList.Count; }
-        }
-
         //Network connection and settings
         private NetPeerConfiguration peerConfig;
         private NetClient netClient;
         private NetConnectionStatus _connectionStatus;
 
         //Network peer data
-        private List<PlayerData> playerList;
         private PlayerData localPlayer;
 
         //World data
@@ -62,8 +56,7 @@ namespace DeterministicWorld.Net
             localPlayer = localPlayerData;
             
             //Create player list
-            playerList = new List<PlayerData>();
-            playerList.Add(localPlayer);
+            clientWorld.addPlayer(localPlayer);
         }
 
         public void connect()
@@ -78,13 +71,6 @@ namespace DeterministicWorld.Net
         public void disconnect()
         {
             netClient.Disconnect("Leaving");
-        }
-
-        //Accessor functions
-        //==================
-        public PlayerData[] getPlayerList()
-        {
-            return playerList.ToArray();
         }
 
         //Mutator functions
@@ -232,7 +218,7 @@ namespace DeterministicWorld.Net
 
             inMsg.ReadAllFields(newPlayer, BindingFlags.Instance | BindingFlags.Public);
 
-            playerList.Add(newPlayer);
+            clientWorld.addPlayer(newPlayer);
         }
 
     }

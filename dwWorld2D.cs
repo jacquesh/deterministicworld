@@ -13,8 +13,14 @@ namespace DeterministicWorld
             get { return currentFrame; }
         }
 
+        public int playerCount
+        {
+            get { return players.Count; }
+        }
+
         public event Action onWorldUpdate;
 
+        private List<PlayerData> players;
         private List<dwObject2D> objects;
 
         private uint currentFrame;
@@ -32,12 +38,18 @@ namespace DeterministicWorld
         //======================
         public dwWorld2D()
         {
+            players = new List<PlayerData>();
             objects = new List<dwObject2D>();
             currentFrame = 0;
             running = false;
             paused = false;
 
             inputData = new Dictionary<uint, FrameInput>();
+        }
+
+        public void addPlayer(PlayerData newPlayer)
+        {
+            players.Add(newPlayer);
         }
 
         public void addObject(dwObject2D obj)
@@ -71,6 +83,11 @@ namespace DeterministicWorld
         public void scheduleOrder(dwObject2D obj, Order issuedOrder, uint targetFrame)
         {
 
+        }
+
+        public PlayerData[] getPlayers()
+        {
+            return players.ToArray();
         }
 
         public dwObject2D[] getObjects()
