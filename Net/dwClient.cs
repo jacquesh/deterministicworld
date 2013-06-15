@@ -7,8 +7,6 @@ using Lidgren.Network;
 
 namespace DeterministicWorld.Net
 {
-
-    
     public class dwClient
     {
         //Network event delegates
@@ -20,12 +18,19 @@ namespace DeterministicWorld.Net
         public event NetDataReceivedDelegate onNetDataReceived;
         public event NetStatusChangedDelegate onNetStatusChanged;
 
+        //Accessor Properties
+        public NetConnectionStatus connectionStatus
+        {
+            get { return connectionStatus; }
+        }
+
         //Network connection and settings
         private NetPeerConfiguration peerConfig;
         private NetClient netClient;
+        private NetConnectionStatus _connectionStatus;
 
         //Network peer data
-        public List<PlayerData> playerList;
+        private List<PlayerData> playerList;
         private PlayerData localPlayer;
 
         //World data
@@ -46,6 +51,7 @@ namespace DeterministicWorld.Net
             //Set up net connection
             peerConfig = new NetPeerConfiguration(WorldConstants.GAME_ID);
             netClient = new NetClient(peerConfig);
+            _connectionStatus = NetConnectionStatus.Disconnected;
 
             //Finalise local player data
             localPlayer = localPlayerData;
@@ -67,6 +73,23 @@ namespace DeterministicWorld.Net
         public void disconnect()
         {
             netClient.Disconnect("Leaving");
+        }
+
+        //Accessor functions
+        //==================
+        public PlayerData[] getPlayerList()
+        {
+            return playerList.ToArray();
+        }
+
+        //Mutator functions
+        //=================
+        private void setConnectionStatus(NetConnectionStatus newStatus)
+        {
+            _connectionStatus = newStatus;
+
+            if (onNetStatusChanged != null)
+                onNetStatusChanged(newStatus);
         }
 
         //Continual/Update functions
@@ -91,8 +114,7 @@ namespace DeterministicWorld.Net
                                 break;
 
                             case(NetDataType.StartGame):
-                                if (onGameStart != null)
-                                    onGameStart();
+                                startGame();
                                 break;
 
                             default:
@@ -105,8 +127,7 @@ namespace DeterministicWorld.Net
 
                     //The server (or this client)'s status changed (e.g connected/disconnected/connecting/disconnecting)
                     case (NetIncomingMessageType.StatusChanged):
-                        if(onNetStatusChanged != null)
-                            onNetStatusChanged(inMsg.SenderConnection.Status);
+                        setConnectionStatus(inMsg.SenderConnection.Status);
                         break;
 
                     default:
@@ -158,6 +179,18 @@ namespace DeterministicWorld.Net
             outMsg.Write((byte)NetDataType.StartGame);
 
             netClient.SendMessage(outMsg, NetDeliveryMethod.ReliableOrdered);
+        }
+
+        /// <summary>
+        /// Actually start the simulation and update the current status.
+        /// Also run any onStartGame callbacks
+        /// </summary>
+        private void startGame()
+        {
+            clientWorld.startSimulation();
+
+            if (onGameStart != null)
+                onGameStart();
         }
 
         /// <summary>
