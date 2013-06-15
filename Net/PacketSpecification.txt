@@ -1,0 +1,20 @@
+﻿Packet Types ( IE values in the enum NetDataType):
+	PlayerData
+	FrameUpdate
+	StartGame
+
+Specifications:
+===============
+
+PlayerData:
+	- byte, NetDataType.PlayerData
+    - Object fields, PlayerData (Instance, Public)
+
+FrameUpdate:
+	- byte, NetDataType.FrameUpdate
+	- uint, the frame in which the contained orders are meant to be executed
+	- int, Number of Orders (n) contained in this packet
+	- Order fields, Order (Instance, Public) (all n of them)
+
+StartGame:
+	- byte, NetDataType.StartGame
