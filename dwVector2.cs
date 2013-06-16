@@ -1,9 +1,17 @@
-﻿namespace DeterministicWorld
+﻿using Lidgren.Network;
+
+namespace DeterministicWorld
 {
-    public class dwVector2
+    public class dwVector2 : dwISerializable
     {
         public float x;
         public float y;
+
+        public dwVector2()
+        {
+            x = 0;
+            y = 0;
+        }
 
         public dwVector2(float xVal, float yVal)
         {
@@ -50,6 +58,19 @@
         public dwVector2 normalized()
         {
             return new dwVector2(this/this.magnitude());
+        }
+
+
+        public void serialize(NetOutgoingMessage outMsg)
+        {
+            outMsg.Write(x);
+            outMsg.Write(y);
+        }
+
+        public void deserialize(NetIncomingMessage inMsg)
+        {
+            x = inMsg.ReadFloat();
+            y = inMsg.ReadFloat();
         }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 
+using Lidgren.Network;
+
 namespace DeterministicWorld
 {
-    public abstract class dwObject2D
+    public abstract class dwObject2D : dwISerializable
     {
         public dwVector2 position;
 
@@ -49,7 +51,9 @@ namespace DeterministicWorld
 
         internal void update_internal()
         {
-            currentOrder.OnUpdate();
+            if(currentOrder != null)
+                currentOrder.OnUpdate();
+
             update();
         }
 
@@ -57,5 +61,18 @@ namespace DeterministicWorld
         /// Runs a single game state update tick
         /// </summary>
         public abstract void update();
+
+
+        public void serialize(NetOutgoingMessage outMsg)
+        {
+            //We never want to actually send an object over the network, we'd only need a reference to the object
+            //So we dont need to send all of this object's data, only its id
+            throw new System.NotImplementedException();
+        }
+
+        public void deserialize(NetIncomingMessage inMsg)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

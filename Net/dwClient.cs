@@ -98,22 +98,7 @@ namespace DeterministicWorld.Net
                     //App-specific data
                     case (NetIncomingMessageType.Data):
                         NetDataType msgDataType = (NetDataType)inMsg.ReadByte();
-                        switch (msgDataType)
-                        {
-                            case(NetDataType.PlayerData):
-                                readPlayerData(inMsg);
-                                break;
-
-                            case(NetDataType.StartGame):
-                                startGame();
-                                break;
-
-                            default:
-                                Console.WriteLine("Unknown data packet of size " + inMsg.LengthBytes + " bytes");
-                                if(onNetDataReceived != null)
-                                    onNetDataReceived(inMsg);
-                                break;
-                        }
+                        handleDataMessage(inMsg, msgDataType);
                         break;
 
                     //The server (or this client)'s status changed (e.g connected/disconnected/connecting/disconnecting)
@@ -148,7 +133,7 @@ namespace DeterministicWorld.Net
         {
             NetOutgoingMessage outMsg = netClient.CreateMessage();
 
-            outMsg.WriteAllFields(localPlayer, BindingFlags.Instance | BindingFlags.Public);
+            localPlayer.serialize(outMsg);
             Console.WriteLine("Sending player data with name: " + localPlayer.name);
 
             return outMsg;
@@ -198,7 +183,7 @@ namespace DeterministicWorld.Net
 
             for (int i = 0; i < input.orderList.Count; i++)
             {
-                outMsg.WriteAllFields(input.orderList[i], BindingFlags.Instance | BindingFlags.Public);
+                input.orderList[i].serialize(outMsg);
             }
 
             netClient.SendMessage(outMsg, NetDeliveryMethod.ReliableOrdered);
@@ -206,6 +191,49 @@ namespace DeterministicWorld.Net
 
         //Incoming messages
         //=================
+
+        private void handleDataMessage(NetIncomingMessage inMsg, NetDataType msgDataType)
+        {
+            switch (msgDataType)
+            {
+                case(NetDataType.FrameUpdate):
+                    readFrameUpdateData(inMsg);
+                    break;
+
+                case (NetDataType.PlayerData):
+                    readPlayerData(inMsg);
+                    break;
+
+                case (NetDataType.StartGame):
+                    startGame();
+                    break;
+
+                default:
+                    Console.WriteLine("Unknown data packet of size " + inMsg.LengthBytes + " bytes");
+                    if (onNetDataReceived != null)
+                        onNetDataReceived(inMsg);
+                    break;
+            }
+        }
+
+        private void readFrameUpdateData(NetIncomingMessage inMsg)
+        {
+            /*
+            - byte, NetDataType.FrameUpdate
+	        - uint, the frame in which the contained orders are meant to be executed
+	        - int, Number of Orders (n) contained in this packet
+	        - Order fields, Order (Instance, Public) (all n of them)
+            */
+            uint targetFrame = inMsg.ReadUInt32();
+            int orderCount = inMsg.ReadInt32();
+
+            for (int i = 0; i < orderCount; i++)
+            {
+                int orderID = inMsg.ReadInt32();
+                Object o = Activator.CreateInstance(clientWorld.idToOrder(orderID));
+               // clientWorld
+            }
+        }
 
         /// <summary>
         /// Reads in a packet containing all player-related data, and parses it
@@ -216,7 +244,7 @@ namespace DeterministicWorld.Net
         {
             PlayerData newPlayer = new PlayerData();
 
-            inMsg.ReadAllFields(newPlayer, BindingFlags.Instance | BindingFlags.Public);
+            newPlayer.deserialize(inMsg);
 
             clientWorld.addPlayer(newPlayer);
         }

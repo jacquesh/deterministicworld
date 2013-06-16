@@ -3,10 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Lidgren.Network;
+
 namespace DeterministicWorld
 {
     public class MoveOrder : Order
     {
+
+        public MoveOrder()
+        {
+        }
 
         public MoveOrder(dwVector2 targetLoc)
         {
@@ -39,5 +45,18 @@ namespace DeterministicWorld
             //throw new NotImplementedException();
         }
 
+        public override void serialize(NetOutgoingMessage outMsg)
+        {
+            base.serialize(outMsg);
+
+            //Do some serialization
+        }
+
+        public override void deserialize(NetIncomingMessage inMsg)
+        {
+            base.deserialize(inMsg);
+
+            //Do some deserialization
+        }
     }
 }

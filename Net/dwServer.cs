@@ -12,7 +12,6 @@ namespace DeterministicWorld.Net
         PlayerData,
         FrameUpdate,
         StartGame,
-
     }
 
     class ServerPlayerData
@@ -130,14 +129,14 @@ namespace DeterministicWorld.Net
             newPlayer.connection = connectionMsg.SenderConnection;
 
             newPlayer.playerData = new PlayerData();
-            connectionMsg.ReadAllFields(newPlayer.playerData, BindingFlags.Instance | BindingFlags.Public);
+            newPlayer.playerData.deserialize(connectionMsg);
 
             //Tell the new player about all the players in this game
             for (int i = 0; i < playerList.Count; i++)
             {
                 outMsg = netServer.CreateMessage();
                 outMsg.Write((byte)NetDataType.PlayerData);
-                outMsg.WriteAllFields(playerList[i].playerData, BindingFlags.Instance | BindingFlags.Public);
+                playerList[i].playerData.serialize(outMsg);
 
                 netServer.SendMessage(outMsg, newPlayer.connection, NetDeliveryMethod.ReliableOrdered);
             }
@@ -145,7 +144,7 @@ namespace DeterministicWorld.Net
             //Tell all players in this game about the new player
             outMsg = netServer.CreateMessage();
             outMsg.Write((byte)NetDataType.PlayerData);
-            outMsg.WriteAllFields(newPlayer.playerData, BindingFlags.Instance | BindingFlags.Public);
+            newPlayer.playerData.serialize(outMsg);
 
             sendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
             

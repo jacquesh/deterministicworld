@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
+
+using Lidgren.Network;
 
 namespace DeterministicWorld
 {
@@ -12,12 +13,13 @@ namespace DeterministicWorld
         Object,
     }
 
-    public class Order : System.Runtime.Serialization.ISerializable
+    public abstract class Order : dwISerializable
     {
         internal dwObject2D owner;
 
-        protected dwVector2 targetPoint;
-        protected dwObject2D targetObject;
+        public TargetType targetType;
+        public dwVector2 targetPoint;
+        public dwObject2D targetObject;
 
         internal void execute()
         {
@@ -42,11 +44,48 @@ namespace DeterministicWorld
         {
         }
 
-        //?????
-        //See serialization tabs in firefox
-        public void GetObjectData(SerializationInfo serialInfo, StreamingContext streamContext)
+        public virtual void serialize(NetOutgoingMessage outMsg)
         {
+            //serialize owner
+            //owner.serialize(outMsg);
+            outMsg.Write((byte)targetType);
 
+            switch (targetType)
+            {
+                case(TargetType.Instant):
+                    break;
+
+                case (TargetType.Point):
+                    targetPoint.serialize(outMsg);
+                    break;
+
+                case(TargetType.Object):
+                    targetObject.serialize(outMsg);
+                    break;
+            }
+        }
+
+        public virtual void deserialize(NetIncomingMessage inMsg)
+        {
+            //deserialize owner
+            //owner.deserialize(inMsg)
+            targetType = (TargetType)inMsg.ReadByte();
+
+            switch (targetType)
+            {
+                case (TargetType.Instant):
+                    break;
+
+                case (TargetType.Point):
+                    targetPoint = new dwVector2();
+                    targetPoint.deserialize(inMsg);
+                    break;
+
+                case (TargetType.Object):
+                    //targetObject = new dwObject2D();
+                    //targetObject.deserialize(inMsg);
+                    break;
+            }
         }
     }
 }
