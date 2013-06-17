@@ -89,18 +89,26 @@ namespace DeterministicWorld
         private static dwObject2D[] indexedObjects;
         private static Queue<int> freeIds;
         private static int nextId;
+        private static int maxId;
 
         static dwObject2D()
         {
             indexedObjects = new dwObject2D[10];
             freeIds = new Queue<int>();
+            maxId = -1;
         }
 
         public static dwObject2D getObject(int obj_id)
         {
-            if (obj_id < 0 || obj_id >= indexedObjects.Length)
+            if (obj_id < 0 || obj_id > maxId)
             {
+                throw new System.IndexOutOfRangeException("Attempt to get the object for an invalid object ID - "+obj_id);
                 return null;
+            }
+
+            if (indexedObjects[obj_id] == null)
+            {
+                throw new System.IndexOutOfRangeException("OMGWTFBQQ null indexed object at index " + obj_id + "? We have " + indexedObjects.Length+" objects currently");
             }
 
             return indexedObjects[obj_id];
@@ -108,10 +116,16 @@ namespace DeterministicWorld
 
         internal static void indexObject(dwObject2D obj)
         {
+            if (obj == null)
+                throw new System.IndexOutOfRangeException("OMGWTFBQQ trying to index null object?");
+                //return;
+
             if (freeIds.Count == 0)
             {
                 obj.id = nextId;
                 nextId++;
+
+                maxId = obj.id;
             }
             else
             {

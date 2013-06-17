@@ -79,7 +79,7 @@ namespace DeterministicWorld
             //By now the order has stored the given object as it's owner
             if (!inputData.ContainsKey(currentFrame))
             {
-                inputData[currentFrame] = new FrameInput();
+                inputData[currentFrame] = new FrameInput(currentFrame);
             }
             inputData[currentFrame].addOrder(issuedOrder);
         }
@@ -155,7 +155,7 @@ namespace DeterministicWorld
             
             //Set up data for the next frame (thereby allowing user interaction to occur independant of game ticks,
             // because there is always something to notify of user input/actions
-            currentFrameInput = new FrameInput();
+            currentFrameInput = new FrameInput(currentFrame);
         }
 
         internal FrameInput getInputData(uint frame)

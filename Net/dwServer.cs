@@ -9,6 +9,7 @@ namespace DeterministicWorld.Net
 {
     public enum NetDataType
     {
+        None,
         PlayerData,
         FrameUpdate,
         StartGame,
@@ -75,6 +76,7 @@ namespace DeterministicWorld.Net
                         //App-specific data
                         case (NetIncomingMessageType.Data):
                             NetDataType dataType = (NetDataType)inMsg.ReadByte();
+                            
                             switch (dataType)
                             {
                                 case(NetDataType.StartGame):
@@ -83,29 +85,13 @@ namespace DeterministicWorld.Net
 
                                 case(NetDataType.FrameUpdate):
                                     //Read in the packet
-                                    uint targetFrame = inMsg.ReadUInt32();
-                                    int orderCount = inMsg.ReadInt32();
-                                    Order[] orders = new Order[orderCount];
-
-                                    for (int i = 0; i < orderCount; i++)
-                                    {
-                                        int orderID = inMsg.ReadInt32();
-                                        orders[i] = (Order)Activator.CreateInstance(OrderRegister.instance.idToOrder(orderID));
-                                        orders[i].deserialize(inMsg);
-                                    }
+                                    FrameInput input = new FrameInput();
+                                    input.deserialize(inMsg);
 
                                     //Write it to a new packet
                                     NetOutgoingMessage outMsg = netServer.CreateMessage();
                                     outMsg.Write((byte)NetDataType.FrameUpdate);
-
-                                    outMsg.Write(targetFrame);
-                                    outMsg.Write(orderCount);
-
-                                    for (int i = 0; i < orderCount; i++)
-                                    {
-                                        outMsg.Write(OrderRegister.instance.orderToID(orders[i].GetType()));
-                                        orders[i].serialize(outMsg);
-                                    }
+                                    input.serialize(outMsg);
 
                                     sendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
 
@@ -160,6 +146,7 @@ namespace DeterministicWorld.Net
             sendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
             
             //Update netServer player list
+            serverWorld.addPlayer(newPlayer.playerData);
             playerList.Add(newPlayer);
             Console.WriteLine(newPlayer.playerData.name+" has connected");
         }
@@ -173,6 +160,8 @@ namespace DeterministicWorld.Net
             outMsg.Write((byte)NetDataType.StartGame);
 
             sendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
+
+            serverWorld.startSimulation();
         }
 
         /// <summary>

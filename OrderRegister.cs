@@ -48,7 +48,7 @@ namespace DeterministicWorld
             {
                 return orderRegister[orderID];
             }
-
+            Console.WriteLine("==========ERROR: Attempt to get the type of an invalid order ID==========");
             return null;
         }
 
@@ -58,7 +58,7 @@ namespace DeterministicWorld
             {
                 return reverseOrderRegister[orderType];
             }
-
+            Console.WriteLine("==========ERROR: Attempt to get the ID of an invalid order type==========");
             return -1;
         }
 

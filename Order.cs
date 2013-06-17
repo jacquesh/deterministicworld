@@ -46,7 +46,9 @@ namespace DeterministicWorld
 
         public virtual void serialize(NetOutgoingMessage outMsg)
         {
-            //serialize owner
+            //We do this extra write here because before we can deserialize the order, we need to get its type id
+            outMsg.Write(OrderRegister.instance.orderToID(this.GetType()));
+
             owner.serialize(outMsg);
             outMsg.Write((byte)targetType);
 
@@ -67,7 +69,6 @@ namespace DeterministicWorld
 
         public virtual void deserialize(NetIncomingMessage inMsg)
         {
-            //deserialize owner
             owner = dwObject2D.deserialize(inMsg);
             targetType = (TargetType)inMsg.ReadByte();
 

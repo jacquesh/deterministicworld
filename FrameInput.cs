@@ -8,10 +8,18 @@ namespace DeterministicWorld
     internal class FrameInput : dwISerializable
     {
         public List<Order> orderList;
+        private uint targetFrame;
 
         public FrameInput()
         {
             orderList = new List<Order>();
+            targetFrame = 0;
+        }
+
+        public FrameInput(uint frameIndex)
+        {
+            orderList = new List<Order>();
+            targetFrame = frameIndex;
         }
 
         public void addOrder(Order issuedOrder)
@@ -21,7 +29,8 @@ namespace DeterministicWorld
 
         public void serialize(NetOutgoingMessage outMsg)
         {
-            //outMsg.Write(targetFrame);
+
+            outMsg.Write(targetFrame);
             outMsg.Write(orderList.Count);
 
             for (int i = 0; i < orderList.Count; i++)
@@ -32,10 +41,10 @@ namespace DeterministicWorld
 
         public void deserialize(NetIncomingMessage inMsg)
         {
-            //targetFrame = inMsg.ReadUInt32();
+            targetFrame = inMsg.ReadUInt32();
             orderList.Capacity = inMsg.ReadInt32();
 
-            for (int i = 0; i < orderList.Count; i++)
+            for (int i = 0; i < orderList.Capacity; i++)
             {
                 int orderID = inMsg.ReadInt32();
                 Order newOrder = (Order)Activator.CreateInstance(OrderRegister.instance.idToOrder(orderID));

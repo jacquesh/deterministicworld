@@ -55,7 +55,7 @@ namespace DeterministicWorld
         public override void deserialize(NetIncomingMessage inMsg)
         {
             base.deserialize(inMsg);
-            Console.WriteLine("Deserialize move order");
+            
             //Do some deserialization
         }
     }

@@ -91,8 +91,6 @@ namespace DeterministicWorld.Net
 
             if (inMsg != null)
             {
-                Console.WriteLine("Received: " + inMsg.MessageType);
-
                 switch (inMsg.MessageType)
                 {
                     //App-specific data
@@ -110,13 +108,13 @@ namespace DeterministicWorld.Net
                         Console.WriteLine("Contents: " + inMsg.ReadString());
                         break;
                 }
-                Console.WriteLine();
             }
         }
 
         private void gameUpdate()
         {
             uint targetFrame = clientWorld.gameFrame + 0;
+            Console.WriteLine("Current frame ID: "+targetFrame);
             //Get input from the world and send it
             FrameInput input = clientWorld.getInputData(targetFrame);
 
@@ -177,9 +175,13 @@ namespace DeterministicWorld.Net
         {
             NetOutgoingMessage outMsg = netClient.CreateMessage();
 
+            outMsg.Write((byte)NetDataType.FrameUpdate);
             input.serialize(outMsg);
 
             netClient.SendMessage(outMsg, NetDeliveryMethod.ReliableOrdered);
+
+            if(input.orderList.Count > 0)
+                Console.WriteLine("Sent input with " + input.orderList.Count + " orders.");
         }
 
         //Incoming messages
@@ -211,16 +213,11 @@ namespace DeterministicWorld.Net
 
         private void readFrameUpdateData(NetIncomingMessage inMsg)
         {
-            /*
-            - byte, NetDataType.FrameUpdate
-	        - uint, the frame in which the contained orders are meant to be executed
-	        - int, Number of Orders (n) contained in this packet
-	        - Order fields, Order (Instance, Public) (all n of them)
-            */
             uint targetFrame = inMsg.ReadUInt32();
             int orderCount = inMsg.ReadInt32();
 
-            Console.WriteLine("Received input with " + orderCount + " orders.");
+            if(orderCount > 0)
+                Console.WriteLine("Received input with " + orderCount + " orders.");
 
             for (int i = 0; i < orderCount; i++)
             {
