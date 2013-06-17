@@ -177,14 +177,7 @@ namespace DeterministicWorld.Net
         {
             NetOutgoingMessage outMsg = netClient.CreateMessage();
 
-            outMsg.Write((byte)NetDataType.FrameUpdate);
-            outMsg.Write(targetFrame);
-            outMsg.Write(input.orderList.Count);
-
-            for (int i = 0; i < input.orderList.Count; i++)
-            {
-                input.orderList[i].serialize(outMsg);
-            }
+            input.serialize(outMsg);
 
             netClient.SendMessage(outMsg, NetDeliveryMethod.ReliableOrdered);
         }
@@ -227,11 +220,15 @@ namespace DeterministicWorld.Net
             uint targetFrame = inMsg.ReadUInt32();
             int orderCount = inMsg.ReadInt32();
 
+            Console.WriteLine("Received input with " + orderCount + " orders.");
+
             for (int i = 0; i < orderCount; i++)
             {
                 int orderID = inMsg.ReadInt32();
-                Object o = Activator.CreateInstance(clientWorld.idToOrder(orderID));
-               // clientWorld
+                Order o = (Order)Activator.CreateInstance(OrderRegister.instance.idToOrder(orderID));
+                o.deserialize(inMsg);
+                
+                clientWorld.issueOrder(o.owner, o);
             }
         }
 

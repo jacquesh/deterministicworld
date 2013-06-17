@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FrameInput.cs" />
     <Compile Include="Net\dwClient.cs" />
     <Compile Include="dwISerializable.cs" />
     <Compile Include="dwObject2D.cs" />
@@ -51,6 +52,7 @@
     <Compile Include="dwWorld2D.cs" />
     <Compile Include="MoveOrder.cs" />
     <Compile Include="Order.cs" />
+    <Compile Include="OrderRegister.cs" />
     <Compile Include="PlayerData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Net\dwServer.cs" />

@@ -63,8 +63,6 @@ namespace DeterministicWorld.Net
 
                 if (inMsg != null)
                 {
-                    Console.WriteLine("Received: " + inMsg.MessageType);
-
                     switch (inMsg.MessageType)
                     {
                         //Client attempting to create a connection
@@ -84,18 +82,32 @@ namespace DeterministicWorld.Net
                                     break;
 
                                 case(NetDataType.FrameUpdate):
+                                    //Read in the packet
                                     uint targetFrame = inMsg.ReadUInt32();
                                     int orderCount = inMsg.ReadInt32();
+                                    Order[] orders = new Order[orderCount];
 
                                     for (int i = 0; i < orderCount; i++)
                                     {
-                                        //In wc3 (and indeed other RTS's) orders are all given an ID, so that they can be easily referenced and dereferenced (a simple lookup table would do)
-                                        //I guess I should do something similar here with an order manager where you register orders and then get the type from a reference ID
-                                        //Then again I should really implement serialization manually into all my networked objects
-                                        //Order o = new Order();
-                                        //inMsg.ReadAllFields(o);
-                                        handleOrder(null, targetFrame);
+                                        int orderID = inMsg.ReadInt32();
+                                        orders[i] = (Order)Activator.CreateInstance(OrderRegister.instance.idToOrder(orderID));
+                                        orders[i].deserialize(inMsg);
                                     }
+
+                                    //Write it to a new packet
+                                    NetOutgoingMessage outMsg = netServer.CreateMessage();
+                                    outMsg.Write((byte)NetDataType.FrameUpdate);
+
+                                    outMsg.Write(targetFrame);
+                                    outMsg.Write(orderCount);
+
+                                    for (int i = 0; i < orderCount; i++)
+                                    {
+                                        outMsg.Write(OrderRegister.instance.orderToID(orders[i].GetType()));
+                                        orders[i].serialize(outMsg);
+                                    }
+
+                                    sendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
 
                                     break;
                             }
@@ -110,7 +122,6 @@ namespace DeterministicWorld.Net
                             Console.WriteLine("Contents: " + inMsg.ReadString());
                             break;
                     }
-                    Console.WriteLine();
                 }
             }
         }
@@ -162,11 +173,6 @@ namespace DeterministicWorld.Net
             outMsg.Write((byte)NetDataType.StartGame);
 
             sendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
-        }
-
-        private void handleOrder(Order order, uint targetFrame)
-        {
-
         }
 
         /// <summary>

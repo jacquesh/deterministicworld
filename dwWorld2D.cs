@@ -24,9 +24,6 @@ namespace DeterministicWorld
         private List<PlayerData> players;
         private List<dwObject2D> objects;
 
-        private Dictionary<int, Type> orderRegister;
-        private Dictionary<Type, int> reverseOrderRegister;
-
         private uint currentFrame;
         private bool running;
         private bool paused;
@@ -45,46 +42,11 @@ namespace DeterministicWorld
             players = new List<PlayerData>();
             objects = new List<dwObject2D>();
 
-            orderRegister = new Dictionary<int, Type>();
-            reverseOrderRegister = new Dictionary<Type, int>();
-
             currentFrame = 0;
             running = false;
             paused = false;
 
             inputData = new Dictionary<uint, FrameInput>();
-        }
-
-        public void registerOrderType(Type orderType)
-        {
-            if (orderType.BaseType != typeof(Order))
-            {
-                return;
-            }
-
-            int orderID = orderRegister.Count;
-            orderRegister[orderID] = orderType;
-            reverseOrderRegister[orderType] = orderID;
-        }
-
-        public Type idToOrder(int orderID)
-        {
-            if (orderRegister.ContainsKey(orderID))
-            {
-                return orderRegister[orderID];
-            }
-
-            return null;
-        }
-
-        public int orderToID(Type orderType)
-        {
-            if (reverseOrderRegister.ContainsKey(orderType))
-            {
-                return reverseOrderRegister[orderType];
-            }
-
-            return -1;
         }
 
         public void addPlayer(PlayerData newPlayer)
@@ -112,7 +74,7 @@ namespace DeterministicWorld
 
         public virtual void issueOrder(dwObject2D obj, Order issuedOrder)
         {
-            //obj.issueOrder(issuedOrder);
+            issuedOrder.owner = obj;
             
             //By now the order has stored the given object as it's owner
             if (!inputData.ContainsKey(currentFrame))
@@ -120,11 +82,6 @@ namespace DeterministicWorld
                 inputData[currentFrame] = new FrameInput();
             }
             inputData[currentFrame].addOrder(issuedOrder);
-        }
-
-        public void scheduleOrder(dwObject2D obj, Order issuedOrder, uint targetFrame)
-        {
-
         }
 
         public PlayerData[] getPlayers()
@@ -214,20 +171,4 @@ namespace DeterministicWorld
         protected abstract void worldStart();
         protected abstract void worldUpdate();
     }
-
-    internal class FrameInput
-    {
-        public List<Order> orderList;
-
-        public FrameInput()
-        {
-            orderList = new List<Order>();
-        }
-
-        public void addOrder(Order issuedOrder)
-        {
-            orderList.Add(issuedOrder);
-        }
-    }
-
 }

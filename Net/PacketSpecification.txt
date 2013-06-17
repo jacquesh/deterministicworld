@@ -14,7 +14,8 @@ FrameUpdate:
 	- byte, NetDataType.FrameUpdate
 	- uint, the frame in which the contained orders are meant to be executed
 	- int, Number of Orders (n) contained in this packet
-	- Order fields, Order (Instance, Public) (all n of them)
+	- int, the id of the nth order
+	- 
 
 StartGame:
 	- byte, NetDataType.StartGame

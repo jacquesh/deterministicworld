@@ -12,12 +12,12 @@ namespace DeterministicWorld
 
         public void serialize(NetOutgoingMessage outMsg)
         {
-            throw new NotImplementedException();
+            outMsg.Write(name);
         }
 
         public void deserialize(NetIncomingMessage inMsg)
         {
-            throw new NotImplementedException();
+            name = inMsg.ReadString();
         }
     }
 }
