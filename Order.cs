@@ -47,7 +47,7 @@ namespace DeterministicWorld
         public virtual void serialize(NetOutgoingMessage outMsg)
         {
             //serialize owner
-            //owner.serialize(outMsg);
+            owner.serialize(outMsg);
             outMsg.Write((byte)targetType);
 
             switch (targetType)
@@ -68,7 +68,7 @@ namespace DeterministicWorld
         public virtual void deserialize(NetIncomingMessage inMsg)
         {
             //deserialize owner
-            //owner.deserialize(inMsg)
+            owner = dwObject2D.deserialize(inMsg);
             targetType = (TargetType)inMsg.ReadByte();
 
             switch (targetType)

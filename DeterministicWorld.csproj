@@ -46,7 +46,7 @@
   <ItemGroup>
     <Compile Include="Net\dwClient.cs" />
     <Compile Include="dwISerializable.cs" />
-    <Compile Include="Net\dwObject2D.cs" />
+    <Compile Include="dwObject2D.cs" />
     <Compile Include="dwVector2.cs" />
     <Compile Include="dwWorld2D.cs" />
     <Compile Include="MoveOrder.cs" />
