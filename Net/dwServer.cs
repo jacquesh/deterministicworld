@@ -68,9 +68,16 @@ namespace DeterministicWorld.Net
                     {
                         //Client attempting to create a connection
                         case (NetIncomingMessageType.ConnectionApproval):
-                            //Accept request and set up new player
-                            inMsg.SenderConnection.Approve();
-                            setupNewPlayer(inMsg);
+                            if (serverWorld.gameFrame == 0)
+                            {
+                                //Accept request and set up new player
+                                inMsg.SenderConnection.Approve();
+                                setupNewPlayer(inMsg);
+                            }
+                            else
+                            {
+                                inMsg.SenderConnection.Deny("The game has already started");
+                            }
                             break;
 
                         //App-specific data
