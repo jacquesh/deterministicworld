@@ -225,7 +225,7 @@ namespace DeterministicWorld.Net
                 Order o = (Order)Activator.CreateInstance(OrderRegister.instance.idToOrder(orderID));
                 o.deserialize(inMsg);
                 
-                clientWorld.issueOrder(o.owner, o);
+                clientWorld.issueOrderInternal(o.owner, o);
             }
         }
 

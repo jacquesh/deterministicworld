@@ -6,6 +6,8 @@ namespace DeterministicWorld
 {
     public abstract class dwObject2D
     {
+        public PlayerData owner;
+
         public dwVector2 position;
 
         private Order currentOrder;
@@ -13,9 +15,12 @@ namespace DeterministicWorld
 
         private int id;
         
-        public dwObject2D()
+        public dwObject2D(PlayerData owningPlayer)
         {
             orderQueue = new Queue<Order>();
+            position = new dwVector2(0, 0);
+
+            owner = owningPlayer;
         }
 
         public int getID()

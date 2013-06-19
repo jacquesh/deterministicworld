@@ -84,6 +84,11 @@ namespace DeterministicWorld
             inputData[currentFrame].addOrder(issuedOrder);
         }
 
+        internal void issueOrderInternal(dwObject2D obj, Order issuedOrder)
+        {
+            obj.issueOrder(issuedOrder);
+        }
+
         public PlayerData[] getPlayers()
         {
             return players.ToArray();
