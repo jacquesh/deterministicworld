@@ -17,9 +17,47 @@ namespace DeterministicWorld
     {
         internal dwObject2D owner;
 
-        public TargetType targetType;
-        public dwVector2 targetPoint;
-        public dwObject2D targetObject;
+        public TargetType targetType
+        {
+            get { return _targetType; }
+
+            internal set
+            {
+                _targetType = value;
+            }
+        }
+
+        public dwVector2 targetPoint
+        {
+            get { return _targetPoint; }
+
+            set
+            {
+                _targetPoint = value;
+                if (value == null)
+                    _targetType = TargetType.Instant;
+                else
+                    _targetType = TargetType.Point;
+            }
+        }
+
+        public dwObject2D targetObject
+        {
+            get { return _targetObject; }
+
+            set
+            {
+                _targetObject = value;
+                if (value == null)
+                    _targetType = TargetType.Instant;
+                else
+                    _targetType = TargetType.Object;
+            }
+        }
+
+        private TargetType _targetType;
+        private dwVector2 _targetPoint;
+        private dwObject2D _targetObject;
 
         internal void execute()
         {
@@ -83,8 +121,7 @@ namespace DeterministicWorld
                     break;
 
                 case (TargetType.Object):
-                    //targetObject = new dwObject2D();
-                    //targetObject.deserialize(inMsg);
+                    targetObject = dwObject2D.deserialize(inMsg);
                     break;
             }
         }
