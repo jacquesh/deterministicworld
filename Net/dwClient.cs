@@ -131,6 +131,9 @@ namespace DeterministicWorld.Net
         {
             NetOutgoingMessage outMsg = netClient.CreateMessage();
 
+            outMsg.Write(WorldConstants.GAME_ID);
+            outMsg.Write(WorldConstants.GAME_VERSION);
+
             localPlayer.serialize(outMsg);
             Console.WriteLine("Sending player data with name: " + localPlayer.name);
 

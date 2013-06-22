@@ -6,6 +6,8 @@ namespace DeterministicWorld
     {
 
         public static string GAME_ID = "Warlocks";
+        public static int GAME_VERSION = 1;
+
         public static int GAME_NET_PORT = 14242;
 
         public static int GAME_MAX_PLAYERS = 10;

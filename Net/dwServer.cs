@@ -69,15 +69,27 @@ namespace DeterministicWorld.Net
                     {
                         //Client attempting to create a connection
                         case (NetIncomingMessageType.ConnectionApproval):
-                            if (serverWorld.gameFrame == 0)
+                            string gameId = inMsg.ReadString();
+                            int gameVersion = inMsg.ReadInt32();
+
+                            if (serverWorld.gameFrame != 0)
+                            {
+                                inMsg.SenderConnection.Deny("The game has already started");
+                                
+                            }
+                            else if (gameId == WorldConstants.GAME_ID)
+                            {
+                                inMsg.SenderConnection.Deny("Invalid game ID, are you connecting to the right game?");
+                            }
+                            else if (gameVersion == WorldConstants.GAME_VERSION)
+                            {
+                                inMsg.SenderConnection.Deny("Game version mismatch, ensure that you have the same version as the server");
+                            }
+                            else
                             {
                                 //Accept request and set up new player
                                 inMsg.SenderConnection.Approve();
                                 setupNewPlayer(inMsg);
-                            }
-                            else
-                            {
-                                inMsg.SenderConnection.Deny("The game has already started");
                             }
                             break;
 
