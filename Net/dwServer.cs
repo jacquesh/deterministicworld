@@ -75,15 +75,18 @@ namespace DeterministicWorld.Net
                             if (serverWorld.gameFrame != 0)
                             {
                                 inMsg.SenderConnection.Deny("The game has already started");
-                                
+                                Console.WriteLine("Denied connection from " + inMsg.SenderConnection.RemoteEndpoint + ". REASON: Game started");
                             }
-                            else if (gameId == WorldConstants.GAME_ID)
+                            else if (gameId != WorldConstants.GAME_ID)
                             {
                                 inMsg.SenderConnection.Deny("Invalid game ID, are you connecting to the right game?");
+                                int comp = gameId.CompareTo(WorldConstants.GAME_ID);
+                                Console.WriteLine("Denied connection from " + inMsg.SenderConnection.RemoteEndpoint + ". REASON: Incorrect Game ID - Is "+gameId+" should be " + WorldConstants.GAME_ID + " -> " + comp);
                             }
-                            else if (gameVersion == WorldConstants.GAME_VERSION)
+                            else if (gameVersion != WorldConstants.GAME_VERSION)
                             {
                                 inMsg.SenderConnection.Deny("Game version mismatch, ensure that you have the same version as the server");
+                                Console.WriteLine("Denied connection from " + inMsg.SenderConnection.RemoteEndpoint + ". REASON: Incorrect Game Version");
                             }
                             else
                             {
