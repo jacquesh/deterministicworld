@@ -2,7 +2,7 @@
 
 namespace DeterministicWorld
 {
-    interface dwISerializable
+    internal interface dwISerializable
     {
         void serialize(NetOutgoingMessage outMsg);
         void deserialize(NetIncomingMessage inMsg);

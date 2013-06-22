@@ -11,6 +11,7 @@ namespace DeterministicWorld.Net
     {
         None,
         PlayerData,
+        PlayerIndexUpdate,
         FrameUpdate,
         StartGame,
     }
@@ -133,7 +134,14 @@ namespace DeterministicWorld.Net
             newPlayer.connection = connectionMsg.SenderConnection;
 
             newPlayer.playerData = new PlayerData();
+            assignInitialSlotToPlayer(newPlayer.playerData);
             newPlayer.playerData.deserialize(connectionMsg);
+
+            outMsg = netServer.CreateMessage();
+            outMsg.Write((byte)NetDataType.PlayerIndexUpdate);
+            outMsg.Write(-1); //Change player @ -1 (localplayer)
+            outMsg.Write(newPlayer.playerData.index); //To the index we generated
+            netServer.SendMessage(outMsg, newPlayer.connection, NetDeliveryMethod.ReliableOrdered);
 
             //Tell the new player about all the players in this game
             for (int i = 0; i < playerList.Count; i++)
@@ -149,13 +157,25 @@ namespace DeterministicWorld.Net
             outMsg = netServer.CreateMessage();
             outMsg.Write((byte)NetDataType.PlayerData);
             newPlayer.playerData.serialize(outMsg);
-
             sendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
-            
+
             //Update netServer player list
             serverWorld.addPlayer(newPlayer.playerData);
             playerList.Add(newPlayer);
+            
             Console.WriteLine(newPlayer.playerData.name+" has connected");
+        }
+
+        private void assignInitialSlotToPlayer(PlayerData player)
+        {
+            for (int i = 0; i < WorldConstants.GAME_MAX_PLAYERS; i++)
+            {
+                if (PlayerData.getPlayer(i) == null)
+                {
+                    player.assignIndex(i);
+                    break;
+                }
+            }
         }
 
         /// <summary>

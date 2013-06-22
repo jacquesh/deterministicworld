@@ -7,22 +7,18 @@ namespace DeterministicWorld
         public float x;
         public float y;
 
-        public dwVector2()
+        public dwVector2() : this(0,0)
         {
-            x = 0;
-            y = 0;
+        }
+
+        public dwVector2(dwVector2 source) : this(source.x, source.y)
+        {
         }
 
         public dwVector2(float xVal, float yVal)
         {
             x = xVal;
             y = yVal;
-        }
-
-        public dwVector2(dwVector2 source)
-        {
-            x = source.x;
-            y = source.y;
         }
 
         public static dwVector2 operator +(dwVector2 v1, dwVector2 v2)
@@ -59,7 +55,6 @@ namespace DeterministicWorld
         {
             return new dwVector2(this/this.magnitude());
         }
-
 
         public void serialize(NetOutgoingMessage outMsg)
         {

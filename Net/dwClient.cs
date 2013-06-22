@@ -114,7 +114,7 @@ namespace DeterministicWorld.Net
         private void gameUpdate()
         {
             uint targetFrame = clientWorld.gameFrame + 0;
-            Console.WriteLine("Current frame ID: "+targetFrame);
+            
             //Get input from the world and send it
             FrameInput input = clientWorld.getInputData(targetFrame);
 
@@ -203,6 +203,10 @@ namespace DeterministicWorld.Net
                     startGame();
                     break;
 
+                case(NetDataType.PlayerIndexUpdate):
+                    updatePlayerIndex(inMsg);
+                    break;
+
                 default:
                     Console.WriteLine("Unknown data packet of size " + inMsg.LengthBytes + " bytes");
                     if (onNetDataReceived != null)
@@ -226,6 +230,19 @@ namespace DeterministicWorld.Net
                 o.deserialize(inMsg);
                 
                 clientWorld.issueOrderInternal(o.owner, o);
+            }
+        }
+
+        private void updatePlayerIndex(NetIncomingMessage inMsg)
+        {
+            int initialIndex = inMsg.ReadInt32();
+            int targetIndex = inMsg.ReadInt32();
+
+            if (initialIndex == -1)
+                localPlayer.assignIndex(targetIndex);
+            else
+            {
+                PlayerData.getPlayer(initialIndex).assignIndex(targetIndex);
             }
         }
 
