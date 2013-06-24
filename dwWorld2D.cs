@@ -59,7 +59,6 @@ namespace DeterministicWorld
             if (obj != null)
             {
                 objects.Add(obj);
-                dwObject2D.indexObject(obj);
             }
         }
 
@@ -68,7 +67,7 @@ namespace DeterministicWorld
             if (obj != null)
             {
                 objects.Remove(obj);
-                dwObject2D.deindexObject(obj);
+                obj.destroy();
             }
         }
 

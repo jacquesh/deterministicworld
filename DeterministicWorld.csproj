@@ -44,7 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="dwIndexible.cs" />
     <Compile Include="FrameInput.cs" />
+    <Compile Include="dwIndexer.cs" />
     <Compile Include="Net\dwClient.cs" />
     <Compile Include="dwISerializable.cs" />
     <Compile Include="dwObject2D.cs" />

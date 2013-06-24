@@ -7,7 +7,7 @@ using Lidgren.Network;
 
 namespace DeterministicWorld
 {
-    public class PlayerData : dwISerializable
+    public class PlayerData : dwISerializable, dwIdentifiable
     {
         public static PlayerData getPlayer(int index)
         {
@@ -15,12 +15,23 @@ namespace DeterministicWorld
         }
         private static PlayerData[] players;
 
+
+        private static dwIndexer<PlayerData> indexer;
+
+        public int id
+        {
+            get;
+            set;
+        }
+
         public string name;
         public int index;
 
         static PlayerData()
         {
             players = new PlayerData[WorldConstants.GAME_MAX_PLAYERS];
+
+            indexer = new dwIndexer<PlayerData>();
         }
 
         public PlayerData() : this("")
@@ -29,6 +40,7 @@ namespace DeterministicWorld
 
         public PlayerData(string playerName)
         {
+            PlayerData.indexer.indexObject(this);
             index = -1;
             name = playerName;
         }

@@ -4,7 +4,7 @@ using Lidgren.Network;
 
 namespace DeterministicWorld
 {
-    public abstract class dwObject2D
+    public abstract class dwObject2D : dwIdentifiable
     {
         public PlayerData owner;
 
@@ -13,19 +13,35 @@ namespace DeterministicWorld
         private Order currentOrder;
         private Queue<Order> orderQueue;
 
-        private int id;
+        public int id
+        {
+            get;
+            set;
+        }
+
+        private static dwIndexer<dwObject2D> indexer;
         
+        static dwObject2D()
+        {
+            indexer = new dwIndexer<dwObject2D>();
+        }
+
         public dwObject2D(PlayerData owningPlayer)
         {
+            if (owningPlayer == null)
+                throw new System.ArgumentNullException();
+
+            indexer.indexObject(this);
+
             orderQueue = new Queue<Order>();
             position = new dwVector2(0, 0);
 
             owner = owningPlayer;
         }
 
-        public int getID()
+        internal void destroy()
         {
-            return id;
+            indexer.deindexObject(this);
         }
 
         internal virtual void issueOrder(Order newOrder)
@@ -80,80 +96,12 @@ namespace DeterministicWorld
         {
             //We never want to actually send an object over the network, we'd only need a reference to the object
             //So we dont need to send all of this object's data, only its id
-            outMsg.Write(getID());
+            outMsg.Write(id);
         }
 
         public static dwObject2D deserialize(NetIncomingMessage inMsg)
         {
-            return dwObject2D.getObject(inMsg.ReadInt32());
-        }
-
-
-        //Indexing
-        //========
-        private static dwObject2D[] indexedObjects;
-        private static Queue<int> freeIds;
-        private static int nextId;
-        private static int maxId;
-
-        static dwObject2D()
-        {
-            indexedObjects = new dwObject2D[10];
-            freeIds = new Queue<int>();
-            maxId = -1;
-        }
-
-        public static dwObject2D getObject(int obj_id)
-        {
-            if (obj_id < 0 || obj_id > maxId)
-            {
-                throw new System.IndexOutOfRangeException("Attempt to get the object for an invalid object ID - "+obj_id);
-                return null;
-            }
-
-            if (indexedObjects[obj_id] == null)
-            {
-                throw new System.IndexOutOfRangeException("OMGWTFBQQ null indexed object at index " + obj_id + "? We have " + indexedObjects.Length+" objects currently");
-            }
-
-            return indexedObjects[obj_id];
-        }
-
-        internal static void indexObject(dwObject2D obj)
-        {
-            if (obj == null)
-                throw new System.IndexOutOfRangeException("OMGWTFBQQ trying to index null object?");
-                //return;
-
-            if (freeIds.Count == 0)
-            {
-                obj.id = nextId;
-                nextId++;
-
-                maxId = obj.id;
-            }
-            else
-            {
-                obj.id = freeIds.Dequeue();
-            }
-
-            //TODO: Resize the array if necessary
-            indexedObjects[obj.id] = obj;
-        }
-
-        internal static void deindexObject(dwObject2D obj)
-        {
-            if (obj.id == nextId - 1)
-            {
-                nextId--;
-            }
-            else
-            {
-                freeIds.Enqueue(obj.id);
-            }
-
-            indexedObjects[obj.id] = null;
-            obj.id = -1;
+            return dwObject2D.indexer.getObject(inMsg.ReadInt32());
         }
     }
 }
