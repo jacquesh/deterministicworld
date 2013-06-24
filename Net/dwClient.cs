@@ -29,6 +29,8 @@ namespace DeterministicWorld.Net
         private NetClient netClient;
         private NetConnectionStatus _connectionStatus;
 
+        private Timer netUpdateTimer;
+        
         //Network peer data
         private PlayerData localPlayer;
 
@@ -41,6 +43,11 @@ namespace DeterministicWorld.Net
         {
             clientWorld = world;
             clientWorld.onWorldUpdate += gameUpdate;
+        }
+
+        ~dwClient()
+        {
+            netUpdateTimer.Dispose();
         }
 
         //Initialization
@@ -65,12 +72,19 @@ namespace DeterministicWorld.Net
             NetOutgoingMessage loginMessage = getLoginMessage();
             netClient.Connect("127.0.0.1", WorldConstants.GAME_NET_PORT, loginMessage);
 
-            Timer timer = new Timer(timerCallback, this, 0, 50);
+            netUpdateTimer = new Timer(timerCallback, this, 0, 50);
         }
 
         public void disconnect()
         {
             netClient.Disconnect("Leaving");
+            netClient.Shutdown("Leaving");
+        }
+
+        public void shutdown()
+        {
+            disconnect();
+            netClient.Shutdown("NetClient shutting down");
         }
 
         //Mutator functions
@@ -198,7 +212,7 @@ namespace DeterministicWorld.Net
                     readFrameUpdateData(inMsg);
                     break;
 
-                case (NetDataType.PlayerData):
+                case (NetDataType.PlayerConnect):
                     readPlayerData(inMsg);
                     break;
 
