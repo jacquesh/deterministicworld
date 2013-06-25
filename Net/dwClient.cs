@@ -74,7 +74,7 @@ namespace DeterministicWorld.Net
         {
             netClient.Start();
             NetOutgoingMessage loginMessage = getLoginMessage();
-            netClient.Connect("127.0.0.1", WorldConstants.GAME_NET_PORT, loginMessage);
+            netClient.Connect("127.0.0.1", dwWorldConstants.GAME_NET_PORT, loginMessage);
 
             netUpdateTimer = new Timer(timerCallback, this, 0, 50);
         }
