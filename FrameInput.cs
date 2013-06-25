@@ -35,6 +35,7 @@ namespace DeterministicWorld
 
             for (int i = 0; i < orderList.Count; i++)
             {
+                Console.WriteLine("Serialize order owned by " + orderList[i].owner.owner.idString);
                 orderList[i].serialize(outMsg);
             }
         }
@@ -50,6 +51,7 @@ namespace DeterministicWorld
                 Order newOrder = (Order)Activator.CreateInstance(OrderRegister.instance.idToOrder(orderID));
                 newOrder.deserialize(inMsg);
 
+                Console.WriteLine("Deserialize order owned by " + newOrder.owner.owner.idString);
                 orderList.Add(newOrder);
             }
         }

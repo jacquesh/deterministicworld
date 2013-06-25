@@ -123,7 +123,7 @@ namespace DeterministicWorld.Net
                         break;
 
                     default:
-                        Console.WriteLine("Contents: " + inMsg.ReadString());
+                        dwLog.logger.Info("Contents: " + inMsg.ReadString());
                         break;
                 }
             }
@@ -153,7 +153,7 @@ namespace DeterministicWorld.Net
             outMsg.Write(dwWorldConstants.GAME_VERSION);
 
             localPlayer.serialize(outMsg);
-            Console.WriteLine("Sending player data with name: " + localPlayer.name);
+            dwLog.logger.Info("Sending player data with name: " + localPlayer.name);
 
             return outMsg;
         }
@@ -202,7 +202,7 @@ namespace DeterministicWorld.Net
             netClient.SendMessage(outMsg, NetDeliveryMethod.ReliableOrdered);
 
             if(input.orderList.Count > 0)
-                Console.WriteLine("Sent input with " + input.orderList.Count + " orders.");
+                dwLog.logger.Info("Sent input with " + input.orderList.Count + " orders.");
         }
 
         //Incoming messages
@@ -229,7 +229,7 @@ namespace DeterministicWorld.Net
                     break;
 
                 default:
-                    Console.WriteLine("Unknown data packet of size " + inMsg.LengthBytes + " bytes");
+                    dwLog.logger.Info("Unknown data packet of size " + inMsg.LengthBytes + " bytes");
                     if (onNetDataReceived != null)
                         onNetDataReceived(inMsg);
                     break;
@@ -242,7 +242,7 @@ namespace DeterministicWorld.Net
             int orderCount = inMsg.ReadInt32();
 
             if(orderCount > 0)
-                Console.WriteLine("Received input with " + orderCount + " orders.");
+                dwLog.logger.Info("Received input with " + orderCount + " orders.");
 
             for (int i = 0; i < orderCount; i++)
             {
