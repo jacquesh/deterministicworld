@@ -52,18 +52,22 @@ namespace DeterministicWorld.Net
 
         //Initialization
         //==============
-        public void initialize(PlayerData localPlayerData)
+        public PlayerData initialize()
         {
             //Set up net connection
-            peerConfig = new NetPeerConfiguration(WorldConstants.GAME_ID);
+            peerConfig = new NetPeerConfiguration(dwWorldConstants.GAME_ID);
             netClient = new NetClient(peerConfig);
             _connectionStatus = NetConnectionStatus.Disconnected;
 
             //Finalise local player data
-            localPlayer = localPlayerData;
+            localPlayer = new PlayerData();
+            localPlayer.initializeAsLocal();
+            localPlayer.name = localPlayer.idString;
             
             //Create player list
             clientWorld.addPlayer(localPlayer);
+
+            return localPlayer;
         }
 
         public void connect()
@@ -145,8 +149,8 @@ namespace DeterministicWorld.Net
         {
             NetOutgoingMessage outMsg = netClient.CreateMessage();
 
-            outMsg.Write(WorldConstants.GAME_ID);
-            outMsg.Write(WorldConstants.GAME_VERSION);
+            outMsg.Write(dwWorldConstants.GAME_ID);
+            outMsg.Write(dwWorldConstants.GAME_VERSION);
 
             localPlayer.serialize(outMsg);
             Console.WriteLine("Sending player data with name: " + localPlayer.name);
@@ -246,7 +250,7 @@ namespace DeterministicWorld.Net
                 Order o = (Order)Activator.CreateInstance(OrderRegister.instance.idToOrder(orderID));
                 o.deserialize(inMsg);
                 
-                clientWorld.issueOrderInternal(o.owner, o);
+                clientWorld.issueOrder(o.owner, o);
             }
         }
 

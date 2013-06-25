@@ -31,7 +31,6 @@ namespace DeterministicWorld
                 //Execute all orders/actions listed in input
                 foreach (Order o in input.orderList)
                 {
-                    replayWorld.issueOrder(o.owner, o);
                 }
             }
         }

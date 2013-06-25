@@ -35,6 +35,9 @@
     <Reference Include="Lidgren.Network">
       <HintPath>..\Lidgren.Network.dll</HintPath>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\Dependencies\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -45,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="dwIndexible.cs" />
+    <Compile Include="dwLog.cs" />
     <Compile Include="FrameInput.cs" />
     <Compile Include="dwIndexer.cs" />
     <Compile Include="Net\dwClient.cs" />
@@ -60,10 +64,7 @@
     <Compile Include="Net\dwServer.cs" />
     <Compile Include="ReplayController.cs" />
     <Compile Include="SoftFloat.cs" />
-    <Compile Include="WorldConstants.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Net\PacketSpecification.txt" />
+    <Compile Include="dwWorldConstants.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

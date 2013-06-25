@@ -51,8 +51,8 @@ namespace DeterministicWorld.Net
             playerList = new List<ServerPlayerData>();
 
             //Create the network configuration
-            peerConfig = new NetPeerConfiguration(WorldConstants.GAME_ID);
-            peerConfig.Port = WorldConstants.GAME_NET_PORT;
+            peerConfig = new NetPeerConfiguration(dwWorldConstants.GAME_ID);
+            peerConfig.Port = dwWorldConstants.GAME_NET_PORT;
             peerConfig.MaximumConnections = 200;
             peerConfig.EnableMessageType(NetIncomingMessageType.ConnectionApproval);
 
@@ -95,9 +95,11 @@ namespace DeterministicWorld.Net
         //======================
         private void threadStart()
         {
-            Console.WriteLine("Starting netServer...");
+            //Console.WriteLine("Starting netServer...");
+            dwLog.logger.Info("Starting NetServer...");
             netServer.Start();
-            Console.WriteLine("Server running...");
+            //Console.WriteLine("Server running...");
+            dwLog.logger.Info("NetServer Running...");
 
             NetIncomingMessage inMsg;
             while (running && (netServer.Status == NetPeerStatus.Starting || netServer.Status == NetPeerStatus.Running))
@@ -127,11 +129,6 @@ namespace DeterministicWorld.Net
                                     //Read in the packet
                                     FrameInput input = new FrameInput();
                                     input.deserialize(inMsg);
-
-                                    foreach(Order o in input.orderList)
-                                    {
-                                        Console.WriteLine("Order from "+o.owner.owner.id);
-                                    }
 
                                     //Write it to a new packet
                                     NetOutgoingMessage outMsg = netServer.CreateMessage();
@@ -170,13 +167,13 @@ namespace DeterministicWorld.Net
                 inMsg.SenderConnection.Deny("The game has already started");
                 Console.WriteLine("Denied connection from " + inMsg.SenderConnection.RemoteEndpoint + ". REASON: Game started");
             }
-            else if (gameId != WorldConstants.GAME_ID)
+            else if (gameId != dwWorldConstants.GAME_ID)
             {
                 inMsg.SenderConnection.Deny("Invalid game ID, are you connecting to the right game?");
-                int comp = gameId.CompareTo(WorldConstants.GAME_ID);
-                Console.WriteLine("Denied connection from " + inMsg.SenderConnection.RemoteEndpoint + ". REASON: Incorrect Game ID - Is " + gameId + " should be " + WorldConstants.GAME_ID + " -> " + comp);
+                int comp = gameId.CompareTo(dwWorldConstants.GAME_ID);
+                Console.WriteLine("Denied connection from " + inMsg.SenderConnection.RemoteEndpoint + ". REASON: Incorrect Game ID - Is " + gameId + " should be " + dwWorldConstants.GAME_ID + " -> " + comp);
             }
-            else if (gameVersion != WorldConstants.GAME_VERSION)
+            else if (gameVersion != dwWorldConstants.GAME_VERSION)
             {
                 inMsg.SenderConnection.Deny("Game version mismatch, ensure that you have the same version as the server");
                 Console.WriteLine("Denied connection from " + inMsg.SenderConnection.RemoteEndpoint + ". REASON: Incorrect Game Version");
@@ -272,7 +269,7 @@ namespace DeterministicWorld.Net
 
         private void assignInitialSlotToPlayer(PlayerData player)
         {
-            for (int i = 0; i < WorldConstants.GAME_MAX_PLAYERS; i++)
+            for (int i = 0; i < dwWorldConstants.GAME_MAX_PLAYERS; i++)
             {
                 if (PlayerData.getPlayer(i) == null)
                 {

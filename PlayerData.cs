@@ -7,7 +7,7 @@ using Lidgren.Network;
 
 namespace DeterministicWorld
 {
-    public class PlayerData : dwISerializable, dwIdentifiable
+    public class PlayerData : dwISerializable
     {
         public static PlayerData getPlayer(int index)
         {
@@ -15,23 +15,13 @@ namespace DeterministicWorld
         }
         private static PlayerData[] players;
 
-
-        private static dwIndexer<PlayerData> indexer;
-
-        public int id
-        {
-            get;
-            set;
-        }
-
         public string name;
         public int index;
+        public string idString;
 
         static PlayerData()
         {
-            players = new PlayerData[WorldConstants.GAME_MAX_PLAYERS];
-
-            indexer = new dwIndexer<PlayerData>();
+            players = new PlayerData[dwWorldConstants.GAME_MAX_PLAYERS];
         }
 
         public PlayerData() : this("")
@@ -40,9 +30,13 @@ namespace DeterministicWorld
 
         public PlayerData(string playerName)
         {
-            PlayerData.indexer.indexObject(this);
             index = -1;
             name = playerName;
+        }
+
+        internal void initializeAsLocal()
+        {
+            idString = NetUtility.GetMacAddress().ToString() + "_" + System.Diagnostics.Process.GetCurrentProcess().Id.ToString();
         }
 
         internal void assignIndex(int i)
@@ -58,12 +52,14 @@ namespace DeterministicWorld
 
         public void serialize(NetOutgoingMessage outMsg)
         {
+            outMsg.Write(idString);
             outMsg.Write(name);
             outMsg.Write(index);
         }
 
         public void deserialize(NetIncomingMessage inMsg)
         {
+            idString = inMsg.ReadString();
             name = inMsg.ReadString();
 
             int newIndex = inMsg.ReadInt32();
@@ -72,6 +68,28 @@ namespace DeterministicWorld
             //(so for example, a server can override this by assigning an index before deserializing)
             if(index == -1)
                 assignIndex(newIndex);
+        }
+
+        public override bool Equals(object obj)
+        {
+            Console.WriteLine("Compare " + this + " to " + obj);
+
+            if (obj.GetType() == typeof(PlayerData))
+            {
+                Console.WriteLine("Comparing ID " + this.idString + " to " + ((PlayerData)obj).idString);
+
+                if (idString.Equals(((PlayerData)obj).idString))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }
