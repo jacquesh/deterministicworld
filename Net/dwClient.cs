@@ -123,7 +123,7 @@ namespace DeterministicWorld.Net
                         break;
 
                     default:
-                        dwLog.logger.Info("Contents: " + inMsg.ReadString());
+                        dwLog.info(inMsg.MessageType + " Contents: " + inMsg.ReadString());
                         break;
                 }
             }
@@ -153,7 +153,7 @@ namespace DeterministicWorld.Net
             outMsg.Write(dwWorldConstants.GAME_VERSION);
 
             localPlayer.serialize(outMsg);
-            dwLog.logger.Info("Sending player data with name: " + localPlayer.name);
+            dwLog.info("Sending player data with name: " + localPlayer.name);
 
             return outMsg;
         }
@@ -202,7 +202,7 @@ namespace DeterministicWorld.Net
             netClient.SendMessage(outMsg, NetDeliveryMethod.ReliableOrdered);
 
             if(input.orderList.Count > 0)
-                dwLog.logger.Info("Sent input with " + input.orderList.Count + " orders.");
+                dwLog.info("Sent input with " + input.orderList.Count + " orders.");
         }
 
         //Incoming messages
@@ -210,6 +210,7 @@ namespace DeterministicWorld.Net
 
         private void handleDataMessage(NetIncomingMessage inMsg, NetDataType msgDataType)
         {
+            dwLog.info("Received message " + msgDataType.ToString());
             switch (msgDataType)
             {
                 case(NetDataType.FrameUpdate):
@@ -229,7 +230,7 @@ namespace DeterministicWorld.Net
                     break;
 
                 default:
-                    dwLog.logger.Info("Unknown data packet of size " + inMsg.LengthBytes + " bytes");
+                    dwLog.info("Unknown data packet of size " + inMsg.LengthBytes + " bytes");
                     if (onNetDataReceived != null)
                         onNetDataReceived(inMsg);
                     break;
@@ -242,7 +243,7 @@ namespace DeterministicWorld.Net
             int orderCount = inMsg.ReadInt32();
 
             if(orderCount > 0)
-                dwLog.logger.Info("Received input with " + orderCount + " orders.");
+                dwLog.info("Received input with " + orderCount + " orders.");
 
             for (int i = 0; i < orderCount; i++)
             {
@@ -279,6 +280,7 @@ namespace DeterministicWorld.Net
             newPlayer.deserialize(inMsg);
 
             clientWorld.addPlayer(newPlayer);
+            dwLog.info("Received player data for " + newPlayer.name);
         }
 
     }

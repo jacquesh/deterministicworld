@@ -42,7 +42,7 @@ namespace DeterministicWorld.Net
 
         public dwServer(dwWorld2D world)
         {
-            dwLog.logger.Info("Initializing NetServer...");
+            dwLog.info("Initializing NetServer...");
 
             //Setup the connection between the server and the world
             serverWorld = world;
@@ -95,9 +95,9 @@ namespace DeterministicWorld.Net
         //======================
         private void threadStart()
         {
-            dwLog.logger.Info("Starting NetServer...");
+            dwLog.info("Starting NetServer...");
             netServer.Start();
-            dwLog.logger.Info("NetServer Running...");
+            dwLog.info("NetServer Running...");
 
             NetIncomingMessage inMsg;
             while (running && (netServer.Status == NetPeerStatus.Starting || netServer.Status == NetPeerStatus.Running))
@@ -145,7 +145,7 @@ namespace DeterministicWorld.Net
                             break;
 
                         default:
-                            dwLog.logger.Info(inMsg.MessageType + " Contents: " + inMsg.ReadString());
+                            dwLog.info(inMsg.MessageType + " Contents: " + inMsg.ReadString());
                             break;
                     }
                 }
@@ -163,22 +163,23 @@ namespace DeterministicWorld.Net
             if (serverWorld.gameFrame != 0)
             {
                 inMsg.SenderConnection.Deny("The game has already started");
-                dwLog.logger.Info("Denied connection from " + inMsg.SenderConnection.RemoteEndPoint + ". REASON: Game started");
+                dwLog.info("Denied connection from " + inMsg.SenderConnection.RemoteEndPoint + ". REASON: Game started");
             }
             else if (gameId != dwWorldConstants.GAME_ID)
             {
                 inMsg.SenderConnection.Deny("Invalid game ID, are you connecting to the right game?");
                 int comp = gameId.CompareTo(dwWorldConstants.GAME_ID);
-                dwLog.logger.Info("Denied connection from " + inMsg.SenderConnection.RemoteEndPoint + ". REASON: Incorrect Game ID - Is " + gameId + " should be " + dwWorldConstants.GAME_ID + " -> " + comp);
+                dwLog.info("Denied connection from " + inMsg.SenderConnection.RemoteEndPoint + ". REASON: Incorrect Game ID - Is " + gameId + " should be " + dwWorldConstants.GAME_ID + " -> " + comp);
             }
             else if (gameVersion != dwWorldConstants.GAME_VERSION)
             {
                 inMsg.SenderConnection.Deny("Game version mismatch, ensure that you have the same version as the server");
-                dwLog.logger.Info("Denied connection from " + inMsg.SenderConnection.RemoteEndPoint + ". REASON: Incorrect Game Version");
+                dwLog.info("Denied connection from " + inMsg.SenderConnection.RemoteEndPoint + ". REASON: Incorrect Game Version");
             }
             else
             {
                 //Accept request and set up new player
+                dwLog.info("Accept client connection request");
                 inMsg.SenderConnection.Approve();
                 setupNewPlayer(inMsg);
             }
@@ -201,7 +202,7 @@ namespace DeterministicWorld.Net
                 }
             }
 
-            dwLog.logger.Info(statusPlayer.name + " " + newStatus);
+            //dwLog.info(statusPlayer.name + " " + newStatus);
 
             switch (newStatus)
             {
@@ -244,6 +245,7 @@ namespace DeterministicWorld.Net
             outMsg.Write(newPlayer.playerData.index); //To the index we generated
             netServer.SendMessage(outMsg, newPlayer.connection, NetDeliveryMethod.ReliableOrdered);
 
+            dwLog.info("Tell the new player about " + playerList.Count + " other players");
             //Tell the new player about all the players in this game
             for (int i = 0; i < playerList.Count; i++)
             {
