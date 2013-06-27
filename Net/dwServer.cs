@@ -21,20 +21,12 @@ namespace DeterministicWorld.Net
         StartGame,
     }
 
-    class ServerPlayerData
-    {
-        public PlayerData playerData;
-        public NetConnection connection;
-    }
-
     public class dwServer
     {
         private Thread serverThread;
 
         private NetPeerConfiguration peerConfig;
         private NetServer netServer;
-
-        private List<ServerPlayerData> playerList;
 
         private dwWorld2D serverWorld;
 
@@ -46,9 +38,6 @@ namespace DeterministicWorld.Net
 
             //Setup the connection between the server and the world
             serverWorld = world;
-
-            //Create the player list
-            playerList = new List<ServerPlayerData>();
 
             //Create the network configuration
             peerConfig = new NetPeerConfiguration(dwWorldConstants.GAME_ID);
@@ -97,7 +86,7 @@ namespace DeterministicWorld.Net
         {
             dwLog.info("Starting NetServer...");
             netServer.Start();
-            dwLog.info("NetServer Running...");
+            dwLog.info("NetServer Running with UID "+netServer.UniqueIdentifier);
 
             NetIncomingMessage inMsg;
             while (running && (netServer.Status == NetPeerStatus.Starting || netServer.Status == NetPeerStatus.Running))
@@ -106,6 +95,7 @@ namespace DeterministicWorld.Net
 
                 if (inMsg != null)
                 {
+
                     switch (inMsg.MessageType)
                     {
                         //Client attempting to create a connection
@@ -119,6 +109,10 @@ namespace DeterministicWorld.Net
 
                             switch (dataType)
                             {
+                                case(NetDataType.PlayerConnect):
+                                    setupNewPlayer(inMsg);
+                                    break;
+
                                 case (NetDataType.StartGame):
                                     startGame();
                                     break;
@@ -132,8 +126,8 @@ namespace DeterministicWorld.Net
                                     NetOutgoingMessage outMsg = netServer.CreateMessage();
                                     outMsg.Write((byte)NetDataType.FrameUpdate);
                                     input.serialize(outMsg);
-
-                                    sendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
+                                    
+                                    netServer.SendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
 
                                     break;
                             }
@@ -179,9 +173,7 @@ namespace DeterministicWorld.Net
             else
             {
                 //Accept request and set up new player
-                dwLog.info("Accept client connection request");
                 inMsg.SenderConnection.Approve();
-                setupNewPlayer(inMsg);
             }
         }
 
@@ -189,20 +181,8 @@ namespace DeterministicWorld.Net
         {
             NetConnectionStatus newStatus = inMsg.SenderConnection.Status;
 
-            PlayerData statusPlayer = null;
-            int playerListIndex = -1;
-
-            for (int i = 0; i < playerList.Count; i++)
-            {
-                if (inMsg.SenderConnection == playerList[i].connection)
-                {
-                    statusPlayer = playerList[i].playerData;
-                    playerListIndex = i;
-                    break;
-                }
-            }
-
-            //dwLog.info(statusPlayer.name + " " + newStatus);
+            if (newStatus == NetConnectionStatus.RespondedAwaitingApproval)
+                return;
 
             switch (newStatus)
             {
@@ -222,6 +202,9 @@ namespace DeterministicWorld.Net
                 default:
                     break;
             }
+            
+            //PlayerData statusPlayer = serverWorld.getPlayer(inMsg.SenderConnection.RemoteUniqueIdentifier);
+            //dwLog.info(statusPlayer.name + " " + newStatus);
         }
 
         //===================================
@@ -230,41 +213,36 @@ namespace DeterministicWorld.Net
         private void setupNewPlayer(NetIncomingMessage connectionMsg)
         {
             NetOutgoingMessage outMsg;
+            PlayerData[] playerList = serverWorld.getPlayers();
 
             //Create new player data
-            ServerPlayerData newPlayer = new ServerPlayerData();
-            newPlayer.connection = connectionMsg.SenderConnection;
-
-            newPlayer.playerData = new PlayerData();
-            assignInitialSlotToPlayer(newPlayer.playerData);
-            newPlayer.playerData.deserialize(connectionMsg);
+            PlayerData newPlayer = new PlayerData();
+            newPlayer.deserialize(connectionMsg);
 
             outMsg = netServer.CreateMessage();
             outMsg.Write((byte)NetDataType.PlayerIndexUpdate);
             outMsg.Write(-1); //Change player @ -1 (localplayer)
-            outMsg.Write(newPlayer.playerData.index); //To the index we generated
-            netServer.SendMessage(outMsg, newPlayer.connection, NetDeliveryMethod.ReliableOrdered);
-
-            dwLog.info("Tell the new player about " + playerList.Count + " other players");
+            outMsg.Write(newPlayer.index); //To the index we generated
+            netServer.SendMessage(outMsg, connectionMsg.SenderConnection, NetDeliveryMethod.ReliableOrdered);
+            
             //Tell the new player about all the players in this game
-            for (int i = 0; i < playerList.Count; i++)
+            for (int i = 0; i < playerList.Length; i++)
             {
                 outMsg = netServer.CreateMessage();
                 outMsg.Write((byte)NetDataType.PlayerConnect);
-                playerList[i].playerData.serialize(outMsg);
+                playerList[i].serialize(outMsg);
 
-                netServer.SendMessage(outMsg, newPlayer.connection, NetDeliveryMethod.ReliableOrdered);
+                netServer.SendMessage(outMsg, connectionMsg.SenderConnection, NetDeliveryMethod.ReliableOrdered);
             }
 
             //Tell all players in this game about the new player
             outMsg = netServer.CreateMessage();
             outMsg.Write((byte)NetDataType.PlayerConnect);
-            newPlayer.playerData.serialize(outMsg);
-            sendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
+            newPlayer.serialize(outMsg);
+            netServer.SendToAll(outMsg, connectionMsg.SenderConnection, NetDeliveryMethod.ReliableOrdered, 0);
 
             //Update netServer player list
-            serverWorld.addPlayer(newPlayer.playerData);
-            playerList.Add(newPlayer);
+            serverWorld.addPlayer(newPlayer);
         }
 
         private void assignInitialSlotToPlayer(PlayerData player)
@@ -284,26 +262,9 @@ namespace DeterministicWorld.Net
             NetOutgoingMessage outMsg = netServer.CreateMessage();
             outMsg.Write((byte)NetDataType.StartGame);
 
-            sendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
+            netServer.SendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
 
             serverWorld.startSimulation();
-        }
-
-        //=================
-        //Utility Functions
-        //=================
-
-        /// <summary>
-        /// Send a packet to all clients
-        /// </summary>
-        /// <param name="outMsg"></param>
-        /// <param name="deliveryMethod"></param>
-        private void sendToAll(NetOutgoingMessage outMsg, NetDeliveryMethod deliveryMethod)
-        {
-            for (int i = 0; i < playerList.Count; i++)
-            {
-                netServer.SendMessage(outMsg, playerList[i].connection, deliveryMethod);
-            }
         }
     }
 }

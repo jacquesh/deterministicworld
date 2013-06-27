@@ -88,6 +88,17 @@ namespace DeterministicWorld
             obj.issueOrder(issuedOrder);
         }
 
+        public PlayerData getPlayer(long uid)
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i].uid == uid)
+                    return players[i];
+            }
+
+            return null;
+        }
+
         public PlayerData[] getPlayers()
         {
             return players.ToArray();

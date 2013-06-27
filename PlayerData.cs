@@ -17,7 +17,7 @@ namespace DeterministicWorld
 
         public string name;
         public int index;
-        public string idString;
+        public long uid;
 
         static PlayerData()
         {
@@ -34,32 +34,27 @@ namespace DeterministicWorld
             name = playerName;
         }
 
-        internal void initializeAsLocal()
-        {
-            idString = NetUtility.GetMacAddress().ToString() + "_" + System.Diagnostics.Process.GetCurrentProcess().Id.ToString();
-        }
-
         internal void assignIndex(int i)
         {
-            if (players[i] != null)
+            /*if (players[i] != null)
             {
                 throw new ArgumentException("Attempt to assign an index that is already in use (" + i + ")");
             }
 
             PlayerData.players[i] = this;
-            index = i;
+            index = i;*/
         }
 
         public void serialize(NetOutgoingMessage outMsg)
         {
-            outMsg.Write(idString);
+            outMsg.Write(uid);
             outMsg.Write(name);
             outMsg.Write(index);
         }
 
         public void deserialize(NetIncomingMessage inMsg)
         {
-            idString = inMsg.ReadString();
+            uid = inMsg.ReadInt64();
             name = inMsg.ReadString();
 
             int newIndex = inMsg.ReadInt32();
@@ -76,9 +71,9 @@ namespace DeterministicWorld
 
             if (obj.GetType() == typeof(PlayerData))
             {
-                Console.WriteLine("Comparing ID " + this.idString + " to " + ((PlayerData)obj).idString);
+                Console.WriteLine("Comparing ID " + this.uid + " to " + ((PlayerData)obj).uid);
 
-                if (idString.Equals(((PlayerData)obj).idString))
+                if (uid == ((PlayerData)obj).uid)
                 {
                     return true;
                 }

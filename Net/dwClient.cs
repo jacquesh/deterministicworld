@@ -59,10 +59,13 @@ namespace DeterministicWorld.Net
             netClient = new NetClient(peerConfig);
             _connectionStatus = NetConnectionStatus.Disconnected;
 
+            netClient.Start();
+
             //Finalise local player data
             localPlayer = new PlayerData();
-            localPlayer.initializeAsLocal();
-            localPlayer.name = localPlayer.idString;
+            localPlayer.uid = netClient.UniqueIdentifier;
+            localPlayer.name = localPlayer.uid.ToString();
+            dwLog.info("Creating player - " + localPlayer.uid);
             
             //Create player list
             clientWorld.addPlayer(localPlayer);
@@ -72,7 +75,6 @@ namespace DeterministicWorld.Net
 
         public void connect()
         {
-            netClient.Start();
             NetOutgoingMessage loginMessage = getLoginMessage();
             netClient.Connect("127.0.0.1", dwWorldConstants.GAME_NET_PORT, loginMessage);
 
@@ -89,16 +91,6 @@ namespace DeterministicWorld.Net
         {
             disconnect();
             netClient.Shutdown("NetClient shutting down");
-        }
-
-        //Mutator functions
-        //=================
-        private void setConnectionStatus(NetConnectionStatus newStatus)
-        {
-            _connectionStatus = newStatus;
-
-            if (onNetStatusChanged != null)
-                onNetStatusChanged(newStatus);
         }
 
         //Continual/Update functions
@@ -119,11 +111,19 @@ namespace DeterministicWorld.Net
 
                     //The server (or this client)'s status changed (e.g connected/disconnected/connecting/disconnecting)
                     case (NetIncomingMessageType.StatusChanged):
-                        setConnectionStatus(inMsg.SenderConnection.Status);
+                        handleConnectionStatusUpdate(inMsg.SenderConnection.RemoteUniqueIdentifier, inMsg.SenderConnection.Status);
+                        break;
+
+                    case(NetIncomingMessageType.DebugMessage):
+                        dwLog.debug(inMsg.ReadString());
+                        break;
+
+                    case(NetIncomingMessageType.WarningMessage):
+                        dwLog.warn(inMsg.ReadString());
                         break;
 
                     default:
-                        dwLog.info(inMsg.MessageType + " Contents: " + inMsg.ReadString());
+                        dwLog.info("Unhandled message type received: "+inMsg.MessageType);
                         break;
                 }
             }
@@ -152,8 +152,15 @@ namespace DeterministicWorld.Net
             outMsg.Write(dwWorldConstants.GAME_ID);
             outMsg.Write(dwWorldConstants.GAME_VERSION);
 
+            return outMsg;
+        }
+
+        private NetOutgoingMessage getConnectionMessage()
+        {
+            NetOutgoingMessage outMsg = netClient.CreateMessage();
+
+            outMsg.Write((byte)NetDataType.PlayerConnect);
             localPlayer.serialize(outMsg);
-            dwLog.info("Sending player data with name: " + localPlayer.name);
 
             return outMsg;
         }
@@ -208,9 +215,27 @@ namespace DeterministicWorld.Net
         //Incoming messages
         //=================
 
+        private void handleConnectionStatusUpdate(long connectionUID, NetConnectionStatus newStatus)
+        {
+            //The connection ID here for clients will always be the server...
+            //but it indicates a status change for the local player (so to speak)
+
+            //Send connection data if necessary
+            if (newStatus == NetConnectionStatus.Connected)
+            {
+                NetOutgoingMessage connectedMessage = getConnectionMessage();
+                netClient.SendMessage(connectedMessage, NetDeliveryMethod.ReliableOrdered);
+            }
+
+            //Update currently stored connection status
+            _connectionStatus = newStatus;
+
+            if (onNetStatusChanged != null)
+                onNetStatusChanged(newStatus);
+        }
+
         private void handleDataMessage(NetIncomingMessage inMsg, NetDataType msgDataType)
         {
-            dwLog.info("Received message " + msgDataType.ToString());
             switch (msgDataType)
             {
                 case(NetDataType.FrameUpdate):
