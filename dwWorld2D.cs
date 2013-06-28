@@ -14,14 +14,33 @@ namespace DeterministicWorld
             get { return currentFrame; }
         }
 
+        private int playerCountCached;
+        private bool playerCountDirty;
         public int playerCount
         {
-            get { return players.Count; }
+            get
+            {
+                if (!playerCountDirty)
+                    return playerCountCached;
+
+                int result = 0;
+
+                for (int i = 0; i < dwWorldConstants.GAME_MAX_PLAYERS; i++)
+                {
+                    if (playerList[i] != null)
+                        result += 1;
+                }
+
+                playerCountCached = result;
+                return result;
+            }
         }
 
         public event Action onWorldUpdate;
 
-        private List<PlayerData> players;
+        private HashSet<PlayerData> unindexedPlayers;
+        private PlayerData[] playerList;
+        
         private List<dwObject2D> objects;
 
         private uint currentFrame;
@@ -39,7 +58,12 @@ namespace DeterministicWorld
         //======================
         public dwWorld2D()
         {
-            players = new List<PlayerData>();
+            unindexedPlayers = new HashSet<PlayerData>();
+            playerList = new PlayerData[dwWorldConstants.GAME_MAX_PLAYERS];
+
+            playerCountCached = 0;
+            playerCountDirty = false;
+
             objects = new List<dwObject2D>();
 
             currentFrame = 0;
@@ -51,7 +75,7 @@ namespace DeterministicWorld
 
         public void addPlayer(PlayerData newPlayer)
         {
-            players.Add(newPlayer);
+            unindexedPlayers.Add(newPlayer);
         }
 
         public void addObject(dwObject2D obj)
@@ -88,20 +112,56 @@ namespace DeterministicWorld
             obj.issueOrder(issuedOrder);
         }
 
-        public PlayerData getPlayer(long uid)
+        internal void assignPlayerIndex(long playerUID, int newIndex)
         {
-            for (int i = 0; i < players.Count; i++)
+            PlayerData player = null;
+
+            //Get the  player either form unindexed players or from the player list
+            HashSet<PlayerData>.Enumerator unindexedEnumerator = unindexedPlayers.GetEnumerator();
+            while (unindexedEnumerator.MoveNext())
             {
-                if (players[i].uid == uid)
-                    return players[i];
+                PlayerData tempPlayer = unindexedEnumerator.Current;
+
+                if (tempPlayer.uid == playerUID)
+                {
+                    player = tempPlayer;
+                    break;
+                }
+            }
+            if (player != null)
+            {
+                unindexedPlayers.Remove(player);
+                playerCountDirty = true;
+            }
+            else
+            {
+                player = getPlayerByUID(playerUID);
+            }
+
+            dwLog.info("Attempt to assign index " + newIndex + " to " + player.name);
+            if (player.index >= 0)
+                playerList[player.index] = null;
+
+            player.index = newIndex;
+
+            if (newIndex >= 0)
+                playerList[newIndex] = player;
+        }
+
+        public PlayerData getPlayerByUID(long uid)
+        {
+            for (int i = 0; i < dwWorldConstants.GAME_MAX_PLAYERS; i++)
+            {
+                if (playerList[i] != null && playerList[i].uid == uid)
+                    return playerList[i];
             }
 
             return null;
         }
 
-        public PlayerData[] getPlayers()
+        public PlayerData getPlayer(int index)
         {
-            return players.ToArray();
+            return playerList[index];
         }
 
         public dwObject2D[] getObjects()
