@@ -216,9 +216,11 @@ namespace DeterministicWorld.Net
             long playerUID = inMsg.ReadInt64();
             int newIndex = inMsg.ReadInt32();
 
-            if (serverWorld.getPlayers()[newIndex] == null)
+            if (serverWorld.getPlayer(newIndex) == null)
             {
-                updatePlayerIndex(playerUID, newIndex);
+                NetOutgoingMessage outMsg = getPlayerIndexUpdate(playerUID, newIndex);
+
+                netServer.SendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
             }
         }
 
@@ -228,24 +230,13 @@ namespace DeterministicWorld.Net
         private void setupNewPlayer(NetIncomingMessage connectionMsg)
         {
             NetOutgoingMessage outMsg;
-            PlayerData[] playerList = serverWorld.getPlayers();
 
             //Create new player data
             PlayerData newPlayer = new PlayerData();
             newPlayer.deserialize(connectionMsg);
-            
-            //Tell the new player about all the players in this game
-            for (int i = 0; i < playerList.Length; i++)
-            {
-                if (playerList[i] == null)
-                    continue;
 
-                outMsg = netServer.CreateMessage();
-                outMsg.Write((byte)NetDataType.PlayerConnect);
-                playerList[i].serialize(outMsg);
-
-                netServer.SendMessage(outMsg, connectionMsg.SenderConnection, NetDeliveryMethod.ReliableOrdered);
-            }
+            //Update netServer player list
+            serverWorld.addPlayer(newPlayer);
 
             //Tell all players in this game about the new player
             outMsg = netServer.CreateMessage();
@@ -253,29 +244,52 @@ namespace DeterministicWorld.Net
             newPlayer.serialize(outMsg);
             netServer.SendToAll(outMsg, connectionMsg.SenderConnection, NetDeliveryMethod.ReliableOrdered, 0);
 
-            //Update netServer player list
-            serverWorld.addPlayer(newPlayer);
-
             //Assign an index to the new player
             for (int i = 0; i < dwWorldConstants.GAME_MAX_PLAYERS; i++)
             {
-                if (PlayerData.getPlayer(i) == null)
+                if (serverWorld.getPlayer(i) == null)
                 {
-                    updatePlayerIndex(newPlayer.uid, i);
+                    //Update the server world
+                    serverWorld.assignPlayerIndex(newPlayer.uid, i);
+
+                    //Send a message to all clients
+                    outMsg = getPlayerIndexUpdate(newPlayer.uid, i);
+                    netServer.SendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
                     break;
                 }
             }
+
+            //Tell the new player about all the players in this game
+            for (int i = 0; i < dwWorldConstants.GAME_MAX_PLAYERS; i++)
+            {
+                PlayerData player = serverWorld.getPlayer(i);
+                if (player == null)
+                    continue;
+
+                if (player.Equals(newPlayer))
+                    continue;
+
+                //Send player data
+                outMsg = netServer.CreateMessage();
+                outMsg.Write((byte)NetDataType.PlayerConnect);
+                player.serialize(outMsg);
+
+                netServer.SendMessage(outMsg, connectionMsg.SenderConnection, NetDeliveryMethod.ReliableOrdered);
+
+                //Send a player index update (because this is not part of serialization)
+                outMsg = getPlayerIndexUpdate(player.uid, player.index);
+                netServer.SendMessage(outMsg, connectionMsg.SenderConnection, NetDeliveryMethod.ReliableOrdered);
+            }
         }
 
-        private void updatePlayerIndex(long playerUID, int newIndex)
+        private NetOutgoingMessage getPlayerIndexUpdate(long playerUID, int newIndex)
         {
-
             NetOutgoingMessage outMsg = netServer.CreateMessage();
             outMsg.Write((byte)NetDataType.PlayerIndexUpdate);
             outMsg.Write(playerUID);
             outMsg.Write(newIndex);
 
-            netServer.SendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
+            return outMsg;
         }
 
         private void startGame()

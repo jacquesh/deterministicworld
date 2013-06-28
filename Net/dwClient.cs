@@ -233,10 +233,8 @@ namespace DeterministicWorld.Net
         {
             long playerID = inMsg.ReadInt64();
             int newIndex = inMsg.ReadInt32();
-
-            PlayerData player = clientWorld.getPlayer(playerID);
-            player.assignIndex(newIndex);
-            dwLog.info("Moving " + player.name + " to index " + newIndex);
+ 
+            clientWorld.assignPlayerIndex(playerID, newIndex);
         }
 
         /// <summary>
