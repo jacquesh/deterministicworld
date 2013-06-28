@@ -168,6 +168,18 @@ namespace DeterministicWorld.Net
         //Outgoing messages
         //=================
 
+        public void requestPlayerIndexUpdate(long playerID, int newIndex)
+        {
+            dwLog.info("Request player " + playerID + " index change to " + newIndex);
+            NetOutgoingMessage outMsg = netClient.CreateMessage();
+
+            outMsg.Write((byte)NetDataType.PlayerIndexUpdate);
+            outMsg.Write(playerID);
+            outMsg.Write(newIndex);
+
+            netClient.SendMessage(outMsg, NetDeliveryMethod.ReliableOrdered);
+        }
+
         /// <summary>
         /// Send a request to the server to start the game,
         /// this will (if successful) notify all players (including this one)
@@ -175,24 +187,11 @@ namespace DeterministicWorld.Net
         /// </summary>
         public void requestStartGame()
         {
-            //
             NetOutgoingMessage outMsg = netClient.CreateMessage();
 
             outMsg.Write((byte)NetDataType.StartGame);
 
             netClient.SendMessage(outMsg, NetDeliveryMethod.ReliableOrdered);
-        }
-
-        /// <summary>
-        /// Actually start the simulation and update the current status.
-        /// Also run any onStartGame callbacks
-        /// </summary>
-        private void startGame()
-        {
-            clientWorld.startSimulation();
-
-            if (onGameStart != null)
-                onGameStart();
         }
 
         /// <summary>
@@ -214,6 +213,41 @@ namespace DeterministicWorld.Net
 
         //Incoming messages
         //=================
+
+        /// <summary>
+        /// Reads in a packet containing all player-related data, and parses it
+        /// into a PlayerData object
+        /// </summary>
+        /// <param name="inMsg"></param>
+        private void readPlayerData(NetIncomingMessage inMsg)
+        {
+            PlayerData newPlayer = new PlayerData();
+
+            newPlayer.deserialize(inMsg);
+
+            clientWorld.addPlayer(newPlayer);
+            dwLog.info("Received player data for " + newPlayer.name);
+        }
+
+        private void readPlayerIndexUpdate(NetIncomingMessage inMsg)
+        {
+            long playerID = inMsg.ReadInt64();
+            int newIndex = inMsg.ReadInt32();
+ 
+            clientWorld.assignPlayerIndex(playerID, newIndex);
+        }
+
+        /// <summary>
+        /// Actually start the simulation and update the current status.
+        /// Also run any onStartGame callbacks
+        /// </summary>
+        private void startGame()
+        {
+            clientWorld.startSimulation();
+
+            if (onGameStart != null)
+                onGameStart();
+        }
 
         private void handleConnectionStatusUpdate(long connectionUID, NetConnectionStatus newStatus)
         {
@@ -251,7 +285,7 @@ namespace DeterministicWorld.Net
                     break;
 
                 case(NetDataType.PlayerIndexUpdate):
-                    updatePlayerIndex(inMsg);
+                    readPlayerIndexUpdate(inMsg);
                     break;
 
                 default:
@@ -279,34 +313,5 @@ namespace DeterministicWorld.Net
                 clientWorld.issueOrder(o.owner, o);
             }
         }
-
-        private void updatePlayerIndex(NetIncomingMessage inMsg)
-        {
-            int initialIndex = inMsg.ReadInt32();
-            int targetIndex = inMsg.ReadInt32();
-
-            if (initialIndex == -1)
-                localPlayer.assignIndex(targetIndex);
-            else
-            {
-                PlayerData.getPlayer(initialIndex).assignIndex(targetIndex);
-            }
-        }
-
-        /// <summary>
-        /// Reads in a packet containing all player-related data, and parses it
-        /// into a PlayerData object
-        /// </summary>
-        /// <param name="inMsg"></param>
-        private void readPlayerData(NetIncomingMessage inMsg)
-        {
-            PlayerData newPlayer = new PlayerData();
-
-            newPlayer.deserialize(inMsg);
-
-            clientWorld.addPlayer(newPlayer);
-            dwLog.info("Received player data for " + newPlayer.name);
-        }
-
     }
 }
