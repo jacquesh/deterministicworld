@@ -71,7 +71,7 @@ namespace DeterministicWorld
             }
         }
 
-        public virtual void issueOrder(dwObject2D obj, Order issuedOrder)
+        public virtual void sendOrderInput(dwObject2D obj, Order issuedOrder)
         {
             issuedOrder.owner = obj;
             
@@ -83,9 +83,20 @@ namespace DeterministicWorld
             inputData[currentFrame].addOrder(issuedOrder);
         }
 
-        internal void issueOrderInternal(dwObject2D obj, Order issuedOrder)
+        protected internal void issueOrder(dwObject2D obj, Order issuedOrder)
         {
             obj.issueOrder(issuedOrder);
+        }
+
+        public PlayerData getPlayer(long uid)
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i].uid == uid)
+                    return players[i];
+            }
+
+            return null;
         }
 
         public PlayerData[] getPlayers()

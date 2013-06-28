@@ -2,7 +2,7 @@
 
 namespace DeterministicWorld
 {
-    public abstract class WorldConstants
+    public abstract class dwWorldConstants
     {
 
         public static string GAME_ID = "Warlocks";
