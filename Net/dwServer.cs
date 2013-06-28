@@ -185,8 +185,11 @@ namespace DeterministicWorld.Net
         {
             NetConnectionStatus newStatus = inMsg.SenderConnection.Status;
 
-            if (newStatus == NetConnectionStatus.RespondedAwaitingApproval)
+            PlayerData statusPlayer = serverWorld.getPlayerByUID(inMsg.SenderConnection.RemoteUniqueIdentifier);
+            if (statusPlayer == null)
                 return;
+
+            dwLog.info(statusPlayer.name + " " + newStatus);
 
             switch (newStatus)
             {
@@ -200,15 +203,13 @@ namespace DeterministicWorld.Net
                     break;
 
                 case(NetConnectionStatus.Disconnected):
-                    //playerList.RemoveAt(playerListIndex);
+                    notifyPlayerDisconnect(statusPlayer.uid);
+                    serverWorld.removePlayer(statusPlayer);
                     break;
 
                 default:
                     break;
             }
-            
-            //PlayerData statusPlayer = serverWorld.getPlayer(inMsg.SenderConnection.RemoteUniqueIdentifier);
-            //dwLog.info(statusPlayer.name + " " + newStatus);
         }
 
         private void playerIndexUpdateRequest(NetIncomingMessage inMsg)
@@ -280,6 +281,15 @@ namespace DeterministicWorld.Net
                 outMsg = getPlayerIndexUpdate(player.uid, player.index);
                 netServer.SendMessage(outMsg, connectionMsg.SenderConnection, NetDeliveryMethod.ReliableOrdered);
             }
+        }
+
+        private void notifyPlayerDisconnect(long playerUID)
+        {
+            NetOutgoingMessage outMsg = netServer.CreateMessage();
+            outMsg.Write((byte)NetDataType.PlayerDisconnect);
+            outMsg.Write(playerUID);
+
+            netServer.SendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
         }
 
         private NetOutgoingMessage getPlayerIndexUpdate(long playerUID, int newIndex)

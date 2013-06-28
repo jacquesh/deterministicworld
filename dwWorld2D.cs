@@ -30,6 +30,7 @@ namespace DeterministicWorld
                     if (playerList[i] != null)
                         result += 1;
                 }
+                result += unindexedPlayers.Count;
 
                 playerCountCached = result;
                 return result;
@@ -76,6 +77,20 @@ namespace DeterministicWorld
         public void addPlayer(PlayerData newPlayer)
         {
             unindexedPlayers.Add(newPlayer);
+        }
+
+        public void removePlayer(PlayerData player)
+        {
+            if (player == null)
+                return;
+
+            if (unindexedPlayers.Contains(player))
+                unindexedPlayers.Remove(player);
+
+            else
+                playerList[player.index] = null;
+
+            playerCountDirty = true;
         }
 
         public void addObject(dwObject2D obj)

@@ -214,6 +214,40 @@ namespace DeterministicWorld.Net
         //Incoming messages
         //=================
 
+        private void handleDataMessage(NetIncomingMessage inMsg, NetDataType msgDataType)
+        {
+            switch (msgDataType)
+            {
+                case (NetDataType.FrameUpdate):
+                    readFrameUpdateData(inMsg);
+                    break;
+
+                case (NetDataType.PlayerConnect):
+                    readPlayerData(inMsg);
+                    break;
+
+                case (NetDataType.PlayerDisconnect):
+                    long playerUID = inMsg.ReadInt64();
+                    PlayerData dcPlayer = clientWorld.getPlayerByUID(playerUID);
+                    handlePlayerDisconnect(dcPlayer);
+                    break;
+
+                case (NetDataType.StartGame):
+                    startGame();
+                    break;
+
+                case (NetDataType.PlayerIndexUpdate):
+                    readPlayerIndexUpdate(inMsg);
+                    break;
+
+                default:
+                    dwLog.info("Unknown data packet of size " + inMsg.LengthBytes + " bytes");
+                    if (onNetDataReceived != null)
+                        onNetDataReceived(inMsg);
+                    break;
+            }
+        }
+
         /// <summary>
         /// Reads in a packet containing all player-related data, and parses it
         /// into a PlayerData object
@@ -268,34 +302,12 @@ namespace DeterministicWorld.Net
                 onNetStatusChanged(newStatus);
         }
 
-        private void handleDataMessage(NetIncomingMessage inMsg, NetDataType msgDataType)
+        private void handlePlayerDisconnect(PlayerData dcPlayer)
         {
-            switch (msgDataType)
-            {
-                case(NetDataType.FrameUpdate):
-                    readFrameUpdateData(inMsg);
-                    break;
-
-                case (NetDataType.PlayerConnect):
-                    readPlayerData(inMsg);
-                    break;
-
-                case (NetDataType.StartGame):
-                    startGame();
-                    break;
-
-                case(NetDataType.PlayerIndexUpdate):
-                    readPlayerIndexUpdate(inMsg);
-                    break;
-
-                default:
-                    dwLog.info("Unknown data packet of size " + inMsg.LengthBytes + " bytes");
-                    if (onNetDataReceived != null)
-                        onNetDataReceived(inMsg);
-                    break;
-            }
+            clientWorld.removePlayer(dcPlayer);
         }
 
+        
         private void readFrameUpdateData(NetIncomingMessage inMsg)
         {
             uint targetFrame = inMsg.ReadUInt32();
