@@ -113,6 +113,10 @@ namespace DeterministicWorld.Net
                                     setupNewPlayer(inMsg);
                                     break;
 
+                                case(NetDataType.PlayerIndexUpdate):
+                                    playerIndexUpdateRequest(inMsg);
+                                    break;
+
                                 case (NetDataType.StartGame):
                                     startGame();
                                     break;
@@ -207,6 +211,17 @@ namespace DeterministicWorld.Net
             //dwLog.info(statusPlayer.name + " " + newStatus);
         }
 
+        private void playerIndexUpdateRequest(NetIncomingMessage inMsg)
+        {
+            long playerUID = inMsg.ReadInt64();
+            int newIndex = inMsg.ReadInt32();
+
+            if (serverWorld.getPlayers()[newIndex] == null)
+            {
+                updatePlayerIndex(playerUID, newIndex);
+            }
+        }
+
         //===================================
         //Server processing/outgoing messages
         //===================================
@@ -218,16 +233,13 @@ namespace DeterministicWorld.Net
             //Create new player data
             PlayerData newPlayer = new PlayerData();
             newPlayer.deserialize(connectionMsg);
-
-            outMsg = netServer.CreateMessage();
-            outMsg.Write((byte)NetDataType.PlayerIndexUpdate);
-            outMsg.Write(-1); //Change player @ -1 (localplayer)
-            outMsg.Write(newPlayer.index); //To the index we generated
-            netServer.SendMessage(outMsg, connectionMsg.SenderConnection, NetDeliveryMethod.ReliableOrdered);
             
             //Tell the new player about all the players in this game
             for (int i = 0; i < playerList.Length; i++)
             {
+                if (playerList[i] == null)
+                    continue;
+
                 outMsg = netServer.CreateMessage();
                 outMsg.Write((byte)NetDataType.PlayerConnect);
                 playerList[i].serialize(outMsg);
@@ -243,18 +255,27 @@ namespace DeterministicWorld.Net
 
             //Update netServer player list
             serverWorld.addPlayer(newPlayer);
-        }
 
-        private void assignInitialSlotToPlayer(PlayerData player)
-        {
+            //Assign an index to the new player
             for (int i = 0; i < dwWorldConstants.GAME_MAX_PLAYERS; i++)
             {
                 if (PlayerData.getPlayer(i) == null)
                 {
-                    player.assignIndex(i);
+                    updatePlayerIndex(newPlayer.uid, i);
                     break;
                 }
             }
+        }
+
+        private void updatePlayerIndex(long playerUID, int newIndex)
+        {
+
+            NetOutgoingMessage outMsg = netServer.CreateMessage();
+            outMsg.Write((byte)NetDataType.PlayerIndexUpdate);
+            outMsg.Write(playerUID);
+            outMsg.Write(newIndex);
+
+            netServer.SendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
         }
 
         private void startGame()
