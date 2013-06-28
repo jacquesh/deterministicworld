@@ -52,25 +52,31 @@ namespace DeterministicWorld.Net
 
         //Initialization
         //==============
-        public void initialize(PlayerData localPlayerData)
+        public PlayerData initialize()
         {
             //Set up net connection
-            peerConfig = new NetPeerConfiguration(WorldConstants.GAME_ID);
+            peerConfig = new NetPeerConfiguration(dwWorldConstants.GAME_ID);
             netClient = new NetClient(peerConfig);
             _connectionStatus = NetConnectionStatus.Disconnected;
 
+            netClient.Start();
+
             //Finalise local player data
-            localPlayer = localPlayerData;
+            localPlayer = new PlayerData();
+            localPlayer.uid = netClient.UniqueIdentifier;
+            localPlayer.name = localPlayer.uid.ToString();
+            dwLog.info("Creating player - " + localPlayer.uid);
             
             //Create player list
             clientWorld.addPlayer(localPlayer);
+
+            return localPlayer;
         }
 
         public void connect()
         {
-            netClient.Start();
             NetOutgoingMessage loginMessage = getLoginMessage();
-            netClient.Connect("127.0.0.1", WorldConstants.GAME_NET_PORT, loginMessage);
+            netClient.Connect("127.0.0.1", dwWorldConstants.GAME_NET_PORT, loginMessage);
 
             netUpdateTimer = new Timer(timerCallback, this, 0, 50);
         }
@@ -85,16 +91,6 @@ namespace DeterministicWorld.Net
         {
             disconnect();
             netClient.Shutdown("NetClient shutting down");
-        }
-
-        //Mutator functions
-        //=================
-        private void setConnectionStatus(NetConnectionStatus newStatus)
-        {
-            _connectionStatus = newStatus;
-
-            if (onNetStatusChanged != null)
-                onNetStatusChanged(newStatus);
         }
 
         //Continual/Update functions
@@ -115,11 +111,19 @@ namespace DeterministicWorld.Net
 
                     //The server (or this client)'s status changed (e.g connected/disconnected/connecting/disconnecting)
                     case (NetIncomingMessageType.StatusChanged):
-                        setConnectionStatus(inMsg.SenderConnection.Status);
+                        handleConnectionStatusUpdate(inMsg.SenderConnection.RemoteUniqueIdentifier, inMsg.SenderConnection.Status);
+                        break;
+
+                    case(NetIncomingMessageType.DebugMessage):
+                        dwLog.debug(inMsg.ReadString());
+                        break;
+
+                    case(NetIncomingMessageType.WarningMessage):
+                        dwLog.warn(inMsg.ReadString());
                         break;
 
                     default:
-                        Console.WriteLine("Contents: " + inMsg.ReadString());
+                        dwLog.info("Unhandled message type received: "+inMsg.MessageType);
                         break;
                 }
             }
@@ -145,11 +149,18 @@ namespace DeterministicWorld.Net
         {
             NetOutgoingMessage outMsg = netClient.CreateMessage();
 
-            outMsg.Write(WorldConstants.GAME_ID);
-            outMsg.Write(WorldConstants.GAME_VERSION);
+            outMsg.Write(dwWorldConstants.GAME_ID);
+            outMsg.Write(dwWorldConstants.GAME_VERSION);
 
+            return outMsg;
+        }
+
+        private NetOutgoingMessage getConnectionMessage()
+        {
+            NetOutgoingMessage outMsg = netClient.CreateMessage();
+
+            outMsg.Write((byte)NetDataType.PlayerConnect);
             localPlayer.serialize(outMsg);
-            Console.WriteLine("Sending player data with name: " + localPlayer.name);
 
             return outMsg;
         }
@@ -198,11 +209,30 @@ namespace DeterministicWorld.Net
             netClient.SendMessage(outMsg, NetDeliveryMethod.ReliableOrdered);
 
             if(input.orderList.Count > 0)
-                Console.WriteLine("Sent input with " + input.orderList.Count + " orders.");
+                dwLog.info("Sent input with " + input.orderList.Count + " orders.");
         }
 
         //Incoming messages
         //=================
+
+        private void handleConnectionStatusUpdate(long connectionUID, NetConnectionStatus newStatus)
+        {
+            //The connection ID here for clients will always be the server...
+            //but it indicates a status change for the local player (so to speak)
+
+            //Send connection data if necessary
+            if (newStatus == NetConnectionStatus.Connected)
+            {
+                NetOutgoingMessage connectedMessage = getConnectionMessage();
+                netClient.SendMessage(connectedMessage, NetDeliveryMethod.ReliableOrdered);
+            }
+
+            //Update currently stored connection status
+            _connectionStatus = newStatus;
+
+            if (onNetStatusChanged != null)
+                onNetStatusChanged(newStatus);
+        }
 
         private void handleDataMessage(NetIncomingMessage inMsg, NetDataType msgDataType)
         {
@@ -225,7 +255,7 @@ namespace DeterministicWorld.Net
                     break;
 
                 default:
-                    Console.WriteLine("Unknown data packet of size " + inMsg.LengthBytes + " bytes");
+                    dwLog.info("Unknown data packet of size " + inMsg.LengthBytes + " bytes");
                     if (onNetDataReceived != null)
                         onNetDataReceived(inMsg);
                     break;
@@ -238,7 +268,7 @@ namespace DeterministicWorld.Net
             int orderCount = inMsg.ReadInt32();
 
             if(orderCount > 0)
-                Console.WriteLine("Received input with " + orderCount + " orders.");
+                dwLog.info("Received input with " + orderCount + " orders.");
 
             for (int i = 0; i < orderCount; i++)
             {
@@ -246,7 +276,7 @@ namespace DeterministicWorld.Net
                 Order o = (Order)Activator.CreateInstance(OrderRegister.instance.idToOrder(orderID));
                 o.deserialize(inMsg);
                 
-                clientWorld.issueOrderInternal(o.owner, o);
+                clientWorld.issueOrder(o.owner, o);
             }
         }
 
@@ -275,6 +305,7 @@ namespace DeterministicWorld.Net
             newPlayer.deserialize(inMsg);
 
             clientWorld.addPlayer(newPlayer);
+            dwLog.info("Received player data for " + newPlayer.name);
         }
 
     }
