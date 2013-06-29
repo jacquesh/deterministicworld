@@ -29,7 +29,8 @@ namespace DeterministicWorld.Net
         private NetClient netClient;
         private NetConnectionStatus _connectionStatus;
 
-        private Timer netUpdateTimer;
+        private Thread netThread;
+        private bool running;
         
         //Network peer data
         private PlayerData localPlayer;
@@ -43,11 +44,14 @@ namespace DeterministicWorld.Net
         {
             clientWorld = world;
             clientWorld.onWorldUpdate += gameUpdate;
+
+            netThread = new Thread(threadStart);
+            running = false;
         }
 
         ~dwClient()
         {
-            netUpdateTimer.Dispose();
+            netThread.Join();
         }
 
         //Initialization
@@ -78,11 +82,13 @@ namespace DeterministicWorld.Net
             NetOutgoingMessage loginMessage = getLoginMessage();
             netClient.Connect("127.0.0.1", dwWorldConstants.GAME_NET_PORT, loginMessage);
 
-            netUpdateTimer = new Timer(timerCallback, this, 0, 50);
+            running = true;
+            netThread.Start();
         }
 
         public void disconnect()
         {
+            running = false;
             netClient.Disconnect("Leaving");
             netClient.Shutdown("Leaving");
         }
@@ -95,48 +101,49 @@ namespace DeterministicWorld.Net
 
         //Continual/Update functions
         //==========================
-        private void timerCallback(Object stateInfo)
+        private void threadStart()
         {
-            NetIncomingMessage inMsg = netClient.ReadMessage();
-
-            if (inMsg != null)
+            while (running)
             {
-                switch (inMsg.MessageType)
+                NetIncomingMessage inMsg = netClient.ReadMessage();
+
+                if (inMsg != null)
                 {
-                    //App-specific data
-                    case (NetIncomingMessageType.Data):
-                        NetDataType msgDataType = (NetDataType)inMsg.ReadByte();
-                        handleDataMessage(inMsg, msgDataType);
-                        break;
+                    switch (inMsg.MessageType)
+                    {
+                        //App-specific data
+                        case (NetIncomingMessageType.Data):
+                            NetDataType msgDataType = (NetDataType)inMsg.ReadByte();
+                            handleDataMessage(inMsg, msgDataType);
+                            break;
 
-                    //The server (or this client)'s status changed (e.g connected/disconnected/connecting/disconnecting)
-                    case (NetIncomingMessageType.StatusChanged):
-                        handleConnectionStatusUpdate(inMsg.SenderConnection.RemoteUniqueIdentifier, inMsg.SenderConnection.Status);
-                        break;
+                        //The server (or this client)'s status changed (e.g connected/disconnected/connecting/disconnecting)
+                        case (NetIncomingMessageType.StatusChanged):
+                            handleConnectionStatusUpdate(inMsg.SenderConnection.RemoteUniqueIdentifier, inMsg.SenderConnection.Status);
+                            break;
 
-                    case(NetIncomingMessageType.DebugMessage):
-                        dwLog.debug(inMsg.ReadString());
-                        break;
+                        case (NetIncomingMessageType.DebugMessage):
+                            dwLog.debug(inMsg.ReadString());
+                            break;
 
-                    case(NetIncomingMessageType.WarningMessage):
-                        dwLog.warn(inMsg.ReadString());
-                        break;
+                        case (NetIncomingMessageType.WarningMessage):
+                            dwLog.warn(inMsg.ReadString());
+                            break;
 
-                    default:
-                        dwLog.info("Unhandled message type received: "+inMsg.MessageType);
-                        break;
+                        default:
+                            dwLog.info("Unhandled message type received: " + inMsg.MessageType);
+                            break;
+                    }
                 }
             }
         }
-
+        
         private void gameUpdate()
         {
-            uint targetFrame = clientWorld.gameFrame + 0;
-            
             //Get input from the world and send it
-            FrameInput input = clientWorld.getInputData(targetFrame);
+            FrameInput input = clientWorld.getInputData();
 
-            sendFrameUpdate(targetFrame, input);
+            sendFrameUpdate(input);
         }
 
         //==========================
@@ -198,7 +205,7 @@ namespace DeterministicWorld.Net
         /// Send an update to the server that acknowledges that this client completed an update frame
         /// and informs it of any input that was given by this client
         /// </summary>
-        internal void sendFrameUpdate(uint targetFrame, FrameInput input)
+        internal void sendFrameUpdate(FrameInput input)
         {
             NetOutgoingMessage outMsg = netClient.CreateMessage();
 
@@ -208,7 +215,7 @@ namespace DeterministicWorld.Net
             netClient.SendMessage(outMsg, NetDeliveryMethod.ReliableOrdered);
 
             if(input.orderList.Count > 0)
-                dwLog.info("Sent input with " + input.orderList.Count + " orders.");
+                dwLog.info("Sent input with " + input.orderList.Count + " orders. Current Frame = "+clientWorld.gameFrame);
         }
 
         //Incoming messages
@@ -252,7 +259,6 @@ namespace DeterministicWorld.Net
         /// Reads in a packet containing all player-related data, and parses it
         /// into a PlayerData object
         /// </summary>
-        /// <param name="inMsg"></param>
         private void readPlayerData(NetIncomingMessage inMsg)
         {
             PlayerData newPlayer = new PlayerData();
@@ -306,24 +312,16 @@ namespace DeterministicWorld.Net
         {
             clientWorld.removePlayer(dcPlayer);
         }
-
         
         private void readFrameUpdateData(NetIncomingMessage inMsg)
         {
-            uint targetFrame = inMsg.ReadUInt32();
-            int orderCount = inMsg.ReadInt32();
+            FrameInput input = new FrameInput();
+            input.deserialize(inMsg);
 
-            if(orderCount > 0)
-                dwLog.info("Received input with " + orderCount + " orders.");
+            if(input.orderList.Count > 0)
+                dwLog.info("Received " + input.orderList.Count + " orders for frame " + input.targetFrame+". Current Frame = "+clientWorld.gameFrame);
 
-            for (int i = 0; i < orderCount; i++)
-            {
-                int orderID = inMsg.ReadInt32();
-                Order o = (Order)Activator.CreateInstance(OrderRegister.instance.idToOrder(orderID));
-                o.deserialize(inMsg);
-                
-                clientWorld.issueOrder(o.owner, o);
-            }
+            clientWorld.addFrameInputData(input);
         }
     }
 }
