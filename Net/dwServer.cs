@@ -123,16 +123,7 @@ namespace DeterministicWorld.Net
 
                                 case (NetDataType.FrameUpdate):
                                     //Read in the packet
-                                    FrameInput input = new FrameInput();
-                                    input.deserialize(inMsg);
-
-                                    //Write it to a new packet
-                                    NetOutgoingMessage outMsg = netServer.CreateMessage();
-                                    outMsg.Write((byte)NetDataType.FrameUpdate);
-                                    input.serialize(outMsg);
-                                    
-                                    netServer.SendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
-
+                                    relayFrameInput(inMsg);
                                     break;
                             }
                             break;
@@ -310,6 +301,19 @@ namespace DeterministicWorld.Net
             netServer.SendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
 
             serverWorld.startSimulation();
+        }
+
+        private void relayFrameInput(NetIncomingMessage inMsg)
+        {
+            FrameInput input = new FrameInput();
+            input.deserialize(inMsg);
+
+            //Write it to a new packet
+            NetOutgoingMessage outMsg = netServer.CreateMessage();
+            outMsg.Write((byte)NetDataType.FrameUpdate);
+            input.serialize(outMsg);
+
+            netServer.SendToAll(outMsg, NetDeliveryMethod.ReliableOrdered);
         }
     }
 }
