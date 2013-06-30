@@ -165,8 +165,14 @@ namespace DeterministicWorld.Net
                 inMsg.SenderConnection.Deny("Game version mismatch, ensure that you have the same version as the server");
                 dwLog.info("Denied connection from " + inMsg.SenderConnection.RemoteEndPoint + ". REASON: Incorrect Game Version");
             }
+            else if (serverWorld.playerCount >= dwWorldConstants.GAME_MAX_PLAYERS)
+            {
+                inMsg.SenderConnection.Deny("Server is full");
+                dwLog.info("Denied connection from " + inMsg.SenderConnection.RemoteEndPoint + ". REASON: Server is full");
+            }
             else
             {
+                dwLog.info("Accept connection from " + inMsg.SenderConnection.RemoteEndPoint);
                 //Accept request and set up new player
                 inMsg.SenderConnection.Approve();
             }
@@ -307,6 +313,17 @@ namespace DeterministicWorld.Net
         {
             FrameInput input = new FrameInput();
             input.deserialize(inMsg);
+            
+            /*
+            uint clientCurrentFrame = input.targetFrame - dwWorldConstants.ORDER_DELAY_TICKS;
+            if (clientCurrentFrame < serverWorld.gameFrame)
+                dwLog.info("Client is behind by " + (serverWorld.gameFrame - clientCurrentFrame) + " frames");
+            else if (clientCurrentFrame > serverWorld.gameFrame)
+                dwLog.info("Client is ahead by " + (clientCurrentFrame - serverWorld.gameFrame) + " frames");
+            */
+
+            if (input.orderList.Count > 0)
+                dwLog.info("Relay " + input.orderList.Count + " orders for frame " + input.targetFrame);
 
             //Write it to a new packet
             NetOutgoingMessage outMsg = netServer.CreateMessage();

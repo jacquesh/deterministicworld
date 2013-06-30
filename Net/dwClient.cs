@@ -60,6 +60,8 @@ namespace DeterministicWorld.Net
         {
             //Set up net connection
             peerConfig = new NetPeerConfiguration(dwWorldConstants.GAME_ID);
+            peerConfig.ConnectionTimeout = 10;
+            
             netClient = new NetClient(peerConfig);
             _connectionStatus = NetConnectionStatus.Disconnected;
 
@@ -117,9 +119,12 @@ namespace DeterministicWorld.Net
                             handleDataMessage(inMsg, msgDataType);
                             break;
 
-                        //The server (or this client)'s status changed (e.g connected/disconnected/connecting/disconnecting)
+                        //The server (or this client)'s status changed (e.g initiatedConnect/connected/disconnected/connecting/disconnecting)
                         case (NetIncomingMessageType.StatusChanged):
-                            handleConnectionStatusUpdate(inMsg.SenderConnection.RemoteUniqueIdentifier, inMsg.SenderConnection.Status);
+                            NetConnectionStatus newStatus = (NetConnectionStatus)inMsg.ReadByte();
+                            string reason = inMsg.ReadString();
+
+                            handleConnectionStatusUpdate(inMsg.SenderConnection.RemoteUniqueIdentifier, newStatus, reason);
                             break;
 
                         case (NetIncomingMessageType.DebugMessage):
@@ -131,10 +136,12 @@ namespace DeterministicWorld.Net
                             break;
 
                         default:
-                            dwLog.info("Unhandled message type received: " + inMsg.MessageType);
+                            dwLog.warn("Unhandled message type received: " + inMsg.MessageType);
                             break;
                     }
                 }
+
+                Thread.Yield();
             }
         }
         
@@ -289,11 +296,11 @@ namespace DeterministicWorld.Net
                 onGameStart();
         }
 
-        private void handleConnectionStatusUpdate(long connectionUID, NetConnectionStatus newStatus)
+        private void handleConnectionStatusUpdate(long connectionUID, NetConnectionStatus newStatus, string statusChangeReason)
         {
             //The connection ID here for clients will always be the server...
             //but it indicates a status change for the local player (so to speak)
-
+            dwLog.info(newStatus+" - "+statusChangeReason);
             //Send connection data if necessary
             if (newStatus == NetConnectionStatus.Connected)
             {
