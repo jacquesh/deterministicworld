@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace DeterministicWorld
 {
     public abstract class dwWorldConstants
