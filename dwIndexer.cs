@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -54,7 +53,7 @@ namespace DeterministicWorld
 
             //TODO: Resize the array if necessary
             indexedObjects[obj.id] = obj;
-            Console.WriteLine(typeof(T).Name+": Allocate " + obj.id);
+            dwLog.info(typeof(T).Name+": Allocate " + obj.id);
         }
 
         internal void deindexObject(T obj)
@@ -68,7 +67,7 @@ namespace DeterministicWorld
                 freeIds.Enqueue(obj.id);
             }
 
-            Console.WriteLine(typeof(T).Name + ": Deallocate " + obj.id + ", freeID count: " + freeIds.Count);
+            dwLog.info(typeof(T).Name + ": Deallocate " + obj.id + ", freeID count: " + freeIds.Count);
             indexedObjects[obj.id] = default(T);
             obj.id = -1;
         }
