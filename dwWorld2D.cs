@@ -169,7 +169,12 @@ namespace DeterministicWorld
 
         internal void addFrameInputData(FrameInput frameInput)
         {
-            inputData[frameInput.targetFrame] = frameInput;
+            if(inputData.ContainsKey(frameInput.targetFrame))
+            {
+                inputData[frameInput.targetFrame].mergeFrom(frameInput);
+            }
+            else
+                inputData[frameInput.targetFrame] = frameInput;
         }
 
         //Data accessors

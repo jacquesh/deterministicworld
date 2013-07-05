@@ -27,6 +27,11 @@ namespace DeterministicWorld
             orderList.Add(issuedOrder);
         }
 
+        public void mergeFrom(FrameInput other)
+        {
+            orderList.AddRange(other.orderList);
+        }
+
         public void serialize(NetOutgoingMessage outMsg)
         {
             outMsg.Write(targetFrame);
