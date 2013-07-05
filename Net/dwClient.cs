@@ -220,9 +220,6 @@ namespace DeterministicWorld.Net
             input.serialize(outMsg);
 
             netClient.SendMessage(outMsg, NetDeliveryMethod.ReliableOrdered);
-
-            if(input.orderList.Count > 0)
-                dwLog.info("Sent input with " + input.orderList.Count + " orders. Current Frame = "+clientWorld.gameFrame);
         }
 
         //Incoming messages
@@ -324,9 +321,6 @@ namespace DeterministicWorld.Net
         {
             FrameInput input = new FrameInput();
             input.deserialize(inMsg);
-
-            if(input.orderList.Count > 0)
-                dwLog.info("Received " + input.orderList.Count + " orders for frame " + input.targetFrame+". Current Frame = "+clientWorld.gameFrame);
 
             clientWorld.addFrameInputData(input);
         }

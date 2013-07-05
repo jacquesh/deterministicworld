@@ -313,17 +313,6 @@ namespace DeterministicWorld.Net
         {
             FrameInput input = new FrameInput();
             input.deserialize(inMsg);
-            
-            /*
-            uint clientCurrentFrame = input.targetFrame - dwWorldConstants.ORDER_DELAY_TICKS;
-            if (clientCurrentFrame < serverWorld.gameFrame)
-                dwLog.info("Client is behind by " + (serverWorld.gameFrame - clientCurrentFrame) + " frames");
-            else if (clientCurrentFrame > serverWorld.gameFrame)
-                dwLog.info("Client is ahead by " + (clientCurrentFrame - serverWorld.gameFrame) + " frames");
-            */
-
-            if (input.orderList.Count > 0)
-                dwLog.info("Relay " + input.orderList.Count + " orders for frame " + input.targetFrame);
 
             //Write it to a new packet
             NetOutgoingMessage outMsg = netServer.CreateMessage();
