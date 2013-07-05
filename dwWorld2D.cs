@@ -67,13 +67,15 @@ namespace DeterministicWorld
 
             objects = new List<dwObject2D>();
 
+            currentFrameInput = new FrameInput();
             currentFrame = 0;
             running = false;
             paused = false;
 
             inputData = new Dictionary<uint, FrameInput>();
         }
-
+        
+        //Player list modifications
         public void addPlayer(PlayerData newPlayer)
         {
             unindexedPlayers.Add(newPlayer);
@@ -91,40 +93,6 @@ namespace DeterministicWorld
                 playerList[player.index] = null;
 
             playerCountDirty = true;
-        }
-
-        public void addObject(dwObject2D obj)
-        {
-            if (obj != null)
-            {
-                objects.Add(obj);
-            }
-        }
-
-        public void removeObject(dwObject2D obj)
-        {
-            if (obj != null)
-            {
-                objects.Remove(obj);
-                obj.destroy();
-            }
-        }
-
-        public virtual void sendOrderInput(dwObject2D obj, Order issuedOrder)
-        {
-            issuedOrder.owner = obj;
-            
-            //By now the order has stored the given object as it's owner
-            if (!inputData.ContainsKey(currentFrame))
-            {
-                inputData[currentFrame] = new FrameInput(currentFrame);
-            }
-            inputData[currentFrame].addOrder(issuedOrder);
-        }
-
-        protected internal void issueOrder(dwObject2D obj, Order issuedOrder)
-        {
-            obj.issueOrder(issuedOrder);
         }
 
         internal void assignPlayerIndex(long playerUID, int newIndex)
@@ -163,6 +131,53 @@ namespace DeterministicWorld
                 playerList[newIndex] = player;
         }
 
+        //Object interaction
+        public void addObject(dwObject2D obj)
+        {
+            if (obj != null)
+            {
+                objects.Add(obj);
+            }
+        }
+
+        public void removeObject(dwObject2D obj)
+        {
+            if (obj != null)
+            {
+                objects.Remove(obj);
+                obj.destroy();
+            }
+        }
+
+        //Order handling
+        public virtual void issueInputOrder(dwObject2D obj, Order issuedOrder)
+        {
+            issuedOrder.owner = obj;
+            
+            currentFrameInput.addOrder(issuedOrder);
+        }
+
+        protected void issueOrder(dwObject2D obj, Order issuedOrder)
+        {
+            sendOrderToObject(obj, issuedOrder);
+        }
+
+        private void sendOrderToObject(dwObject2D obj, Order issuedOrder)
+        {
+            obj.issueOrder(issuedOrder);
+        }
+
+        internal void addFrameInputData(FrameInput frameInput)
+        {
+            if(inputData.ContainsKey(frameInput.targetFrame))
+            {
+                inputData[frameInput.targetFrame].mergeFrom(frameInput);
+            }
+            else
+                inputData[frameInput.targetFrame] = frameInput;
+        }
+
+        //Data accessors
         public PlayerData getPlayerByUID(long uid)
         {
             for (int i = 0; i < dwWorldConstants.GAME_MAX_PLAYERS; i++)
@@ -184,6 +199,12 @@ namespace DeterministicWorld
             return objects.ToArray();
         }
 
+        internal FrameInput getInputData()
+        {
+            return currentFrameInput;
+        }
+
+        //Simulation flow control
         public void startSimulation()
         {
             if (simulationThread == null)
@@ -204,6 +225,7 @@ namespace DeterministicWorld
             }
         }
 
+        //Internal functions
         private void threadStart()
         {
             running = true;
@@ -223,9 +245,21 @@ namespace DeterministicWorld
         {
             worldStart();
         }
-
+        
         private void update()
         {
+            //Issue all of the scheduled orders
+            if (inputData.ContainsKey(currentFrame))
+            {
+                foreach (Order o in inputData[currentFrame].orderList)
+                {
+                    sendOrderToObject(o.owner, o);
+                }
+
+                //Clear the data from the input table
+                inputData.Remove(currentFrame);
+            }
+
             //Call an update on all of the world's objects
             for (int i = 0; i < objects.Count; i++)
             {
@@ -245,19 +279,10 @@ namespace DeterministicWorld
             
             //Set up data for the next frame (thereby allowing user interaction to occur independant of game ticks,
             // because there is always something to notify of user input/actions
-            currentFrameInput = new FrameInput(currentFrame);
+            currentFrameInput = new FrameInput(currentFrame + dwWorldConstants.ORDER_DELAY_TICKS);
         }
 
-        internal FrameInput getInputData(uint frame)
-        {
-            if (inputData.ContainsKey(frame))
-            {
-                return inputData[frame];
-            }
-
-            return emptyInput;
-        }
-
+        //Abstract events
         protected abstract void worldStart();
         protected abstract void worldUpdate();
     }
