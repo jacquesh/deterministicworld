@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="dwWorld2D_OrderInput.cs" />
     <Compile Include="Network\dwIIdentifiable.cs" />
     <Compile Include="dwLog.cs" />
     <Compile Include="Util\dwRandom.cs" />

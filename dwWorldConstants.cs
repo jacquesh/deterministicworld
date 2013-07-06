@@ -3,7 +3,6 @@ namespace DeterministicWorld
 {
     public abstract class dwWorldConstants
     {
-
         public readonly static string GAME_ID = "Warlocks";
         public readonly static int GAME_VERSION = 1;
 
