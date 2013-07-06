@@ -54,6 +54,10 @@
     <Compile Include="dwWorld2D_OrderInput.cs" />
     <Compile Include="Network\dwIIdentifiable.cs" />
     <Compile Include="dwLog.cs" />
+    <Compile Include="Physics\dwCircleCollider.cs" />
+    <Compile Include="Physics\dwCollider2D.cs" />
+    <Compile Include="Physics\dwSquareCollider.cs" />
+    <Compile Include="dwRect.cs" />
     <Compile Include="Util\dwRandom.cs" />
     <Compile Include="dwWorld2D_Player.cs" />
     <Compile Include="dwFrameInput.cs" />

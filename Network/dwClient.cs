@@ -190,7 +190,6 @@ namespace DeterministicWorld.Network
 
         //Outgoing messages
         //=================
-
         public void requestPlayerIndexUpdate(long playerID, int newIndex)
         {
             dwLog.info("Request player " + playerID + " index change to " + newIndex);
