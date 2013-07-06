@@ -159,12 +159,7 @@ namespace DeterministicWorld
             currentFrameInput.addOrder(issuedOrder);
         }
 
-        protected void issueOrder(dwObject2D obj, Order issuedOrder)
-        {
-            sendOrderToObject(obj, issuedOrder);
-        }
-
-        private void sendOrderToObject(dwObject2D obj, Order issuedOrder)
+        protected internal void issueOrder(dwObject2D obj, Order issuedOrder)
         {
             obj.issueOrder(issuedOrder);
         }
@@ -255,7 +250,7 @@ namespace DeterministicWorld
             {
                 foreach (Order o in inputData[currentFrame].orderList)
                 {
-                    sendOrderToObject(o.owner, o);
+                    issueOrder(o.owner, o);
                 }
 
                 //Clear the data from the input table

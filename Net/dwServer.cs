@@ -311,8 +311,13 @@ namespace DeterministicWorld.Net
 
         private void relayFrameInput(NetIncomingMessage inMsg)
         {
+            //Get frame input
             FrameInput input = new FrameInput();
             input.deserialize(inMsg);
+
+            //Send it to the local server world
+            foreach(Order o in input.orderList)
+                serverWorld.issueOrder(o.owner, o);
 
             //Write it to a new packet
             NetOutgoingMessage outMsg = netServer.CreateMessage();
