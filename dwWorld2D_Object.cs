@@ -29,5 +29,14 @@ namespace DeterministicWorld
         {
             return objects.ToArray();
         }
+
+        public IEnumerable<dwObject2D> getPlayerObjects(dwPlayerData player)
+        {
+            foreach (dwObject2D obj in getObjects())
+            {
+                if (obj.owner.Equals(player))
+                    yield return obj;
+            }
+        }
     }
 }
