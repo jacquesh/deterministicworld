@@ -6,10 +6,10 @@ namespace DeterministicWorld.Network
 {
     internal class dwIndexer<T> where T : dwIIdentifiable
     {
-        private static T[] indexedObjects;
-        private static Queue<int> freeIds;
-        private static int nextId;
-        private static int maxId;
+        private T[] indexedObjects;
+        private Queue<int> freeIds;
+        private int nextId;
+        private int maxId;
 
         public dwIndexer()
         {
@@ -51,7 +51,15 @@ namespace DeterministicWorld.Network
                 obj.id = freeIds.Dequeue();
             }
 
-            //TODO: Resize the array if necessary
+            //Resize if necessary
+            if (obj.id >= indexedObjects.Length)
+            {
+                T[] newIndexedObjects = new T[indexedObjects.Length * 2];
+                indexedObjects.CopyTo(newIndexedObjects, 0);
+
+                indexedObjects = newIndexedObjects;
+            }
+
             indexedObjects[obj.id] = obj;
             dwLog.info(typeof(T).Name+": Allocate " + obj.id);
         }
