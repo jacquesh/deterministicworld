@@ -50,28 +50,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="dwWorld2D_Object.cs" />
     <Compile Include="dwWorld2D_OrderInput.cs" />
-    <Compile Include="dwIndexible.cs" />
+    <Compile Include="Network\dwIdentifiable.cs" />
     <Compile Include="dwLog.cs" />
-    <Compile Include="dwRandom.cs" />
+    <Compile Include="Util\dwRandom.cs" />
     <Compile Include="dwWorld2D_Player.cs" />
-    <Compile Include="FrameInput.cs" />
-    <Compile Include="dwIndexer.cs" />
-    <Compile Include="Net\dwClient.cs" />
-    <Compile Include="dwISerializable.cs" />
+    <Compile Include="dwFrameInput.cs" />
+    <Compile Include="Network\dwIndexer.cs" />
+    <Compile Include="Network\dwClient.cs" />
+    <Compile Include="Network\dwISerializable.cs" />
     <Compile Include="dwObject2D.cs" />
     <Compile Include="dwVector2.cs" />
     <Compile Include="dwWorld2D.cs" />
-    <Compile Include="MoveOrder.cs" />
-    <Compile Include="Order.cs" />
-    <Compile Include="OrderRegister.cs" />
-    <Compile Include="PlayerData.cs" />
+    <Compile Include="Orders\MoveOrder.cs" />
+    <Compile Include="Orders\dwOrder.cs" />
+    <Compile Include="Orders\dwOrderRegister.cs" />
+    <Compile Include="dwPlayerData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Net\dwServer.cs" />
-    <Compile Include="ReplayController.cs" />
+    <Compile Include="Network\dwServer.cs" />
+    <Compile Include="Util\dwReplayController.cs" />
     <Compile Include="SoftFloat.cs" />
     <Compile Include="dwWorldConstants.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

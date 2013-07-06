@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Threading;
+using System.Reflection;
 using System.Collections.Generic;
 
 using Lidgren.Network;
 
-using System.Reflection;
+using DeterministicWorld.Orders;
 
-namespace DeterministicWorld.Net
+namespace DeterministicWorld.Network
 {
     public enum NetDataType
     {
@@ -182,7 +183,7 @@ namespace DeterministicWorld.Net
         {
             NetConnectionStatus newStatus = inMsg.SenderConnection.Status;
 
-            PlayerData statusPlayer = serverWorld.getPlayerByUID(inMsg.SenderConnection.RemoteUniqueIdentifier);
+            dwPlayerData statusPlayer = serverWorld.getPlayerByUID(inMsg.SenderConnection.RemoteUniqueIdentifier);
             if (statusPlayer == null)
                 return;
 
@@ -230,7 +231,7 @@ namespace DeterministicWorld.Net
             NetOutgoingMessage outMsg;
 
             //Create new player data
-            PlayerData newPlayer = new PlayerData();
+            dwPlayerData newPlayer = new dwPlayerData();
             newPlayer.deserialize(connectionMsg);
 
             //Update netServer player list
@@ -260,7 +261,7 @@ namespace DeterministicWorld.Net
             //Tell the new player about all the players in this game
             for (int i = 0; i < dwWorldConstants.GAME_MAX_PLAYERS; i++)
             {
-                PlayerData player = serverWorld.getPlayer(i);
+                dwPlayerData player = serverWorld.getPlayer(i);
                 if (player == null)
                     continue;
 
@@ -312,11 +313,11 @@ namespace DeterministicWorld.Net
         private void relayFrameInput(NetIncomingMessage inMsg)
         {
             //Get frame input
-            FrameInput input = new FrameInput();
+            dwFrameInput input = new dwFrameInput();
             input.deserialize(inMsg);
 
             //Send it to the local server world
-            foreach(Order o in input.orderList)
+            foreach(dwOrder o in input.orderList)
                 serverWorld.issueOrder(o.owner, o);
 
             //Write it to a new packet

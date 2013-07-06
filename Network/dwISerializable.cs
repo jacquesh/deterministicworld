@@ -1,6 +1,6 @@
 ﻿using Lidgren.Network;
 
-namespace DeterministicWorld
+namespace DeterministicWorld.Network
 {
     internal interface dwISerializable
     {

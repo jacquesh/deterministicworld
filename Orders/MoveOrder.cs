@@ -2,9 +2,9 @@
 
 using Lidgren.Network;
 
-namespace DeterministicWorld
+namespace DeterministicWorld.Orders
 {
-    public class MoveOrder : Order
+    public class MoveOrder : dwOrder
     {
 
         public MoveOrder()

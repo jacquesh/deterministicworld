@@ -3,28 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace DeterministicWorld
+namespace DeterministicWorld.Orders
 {
-    public class OrderRegister
+    public class dwOrderRegister
     {
 
-        public static OrderRegister instance
+        public static dwOrderRegister instance
         {
             get
             {
                 if (_instance == null)
                 {
-                    _instance = new OrderRegister();
+                    _instance = new dwOrderRegister();
                 }
                 return _instance;
             }
         }
-        private static OrderRegister _instance;
+        private static dwOrderRegister _instance;
 
         private Dictionary<int, Type> orderRegister;
         private Dictionary<Type, int> reverseOrderRegister;
 
-        private OrderRegister()
+        private dwOrderRegister()
         {
             orderRegister = new Dictionary<int, Type>();
             reverseOrderRegister = new Dictionary<Type, int>();
@@ -32,7 +32,7 @@ namespace DeterministicWorld
 
         public void registerOrderType(Type orderType)
         {
-            if (orderType.BaseType != typeof(Order))
+            if (orderType.BaseType != typeof(dwOrder))
             {
                 return;
             }

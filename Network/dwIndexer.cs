@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Text;
 
-namespace DeterministicWorld
+namespace DeterministicWorld.Network
 {
-    internal class dwIndexer<T> where T : dwIdentifiable
+    internal class dwIndexer<T> where T : dwIIdentifiable
     {
         private static T[] indexedObjects;
         private static Queue<int> freeIds;
