@@ -5,6 +5,8 @@ namespace DeterministicWorld
 {
     public abstract partial class dwWorld2D
     {
+        private List<dwObject2D> objects;
+
         //Object interaction
         public void addObject(dwObject2D obj)
         {

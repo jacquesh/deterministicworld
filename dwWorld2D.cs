@@ -15,8 +15,6 @@ namespace DeterministicWorld
         }
         
         public event Action onWorldUpdate;
-        
-        private List<dwObject2D> objects;
 
         private uint currentFrame;
         private bool running;
