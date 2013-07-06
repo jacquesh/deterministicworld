@@ -37,11 +37,11 @@ namespace DeterministicWorld
                 throw new System.ArgumentNullException();
 
             indexer.indexObject(this);
+            owner = owningPlayer;
 
             orderQueue = new Queue<dwOrder>();
             position = new dwVector2(0, 0);
-
-            owner = owningPlayer;
+            lifeticksRemaining = -1;
         }
 
         ~dwObject2D()
