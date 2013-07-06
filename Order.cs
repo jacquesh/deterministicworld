@@ -3,8 +3,6 @@ using System.Runtime.Serialization;
 
 using Lidgren.Network;
 
-using DeterministicWorld.Network;
-
 namespace DeterministicWorld
 {
     public enum TargetType
@@ -14,7 +12,7 @@ namespace DeterministicWorld
         Object,
     }
 
-    public abstract class dwOrder : dwISerializable
+    public abstract class Order : dwISerializable
     {
         protected internal dwObject2D owner;
 
@@ -86,7 +84,7 @@ namespace DeterministicWorld
         public virtual void serialize(NetOutgoingMessage outMsg)
         {
             //We do this extra write here because before we can deserialize the order, we need to get its type id
-            outMsg.Write(dwOrderRegister.instance.orderToID(this.GetType()));
+            outMsg.Write(OrderRegister.instance.orderToID(this.GetType()));
 
             owner.serialize(outMsg);
             outMsg.Write((byte)targetType);

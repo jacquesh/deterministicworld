@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 using Lidgren.Network;
 
-namespace DeterministicWorld.Network
+namespace DeterministicWorld.Net
 {
     public class dwClient
     {
@@ -33,7 +33,7 @@ namespace DeterministicWorld.Network
         private bool running;
         
         //Network peer data
-        private dwPlayerData localPlayer;
+        private PlayerData localPlayer;
 
         //World data
         private dwWorld2D clientWorld;
@@ -56,7 +56,7 @@ namespace DeterministicWorld.Network
 
         //Initialization
         //==============
-        public dwPlayerData initialize()
+        public PlayerData initialize()
         {
             //Set up net connection
             peerConfig = new NetPeerConfiguration(dwWorldConstants.GAME_ID);
@@ -68,7 +68,7 @@ namespace DeterministicWorld.Network
             netClient.Start();
 
             //Finalise local player data
-            localPlayer = new dwPlayerData();
+            localPlayer = new PlayerData();
             localPlayer.uid = netClient.UniqueIdentifier;
             localPlayer.name = localPlayer.uid.ToString();
             dwLog.info("Creating player - " + localPlayer.uid);
@@ -148,7 +148,7 @@ namespace DeterministicWorld.Network
         private void gameUpdate()
         {
             //Get input from the world and send it
-            dwFrameInput input = clientWorld.getInputData();
+            FrameInput input = clientWorld.getInputData();
 
             sendFrameUpdate(input);
         }
@@ -212,7 +212,7 @@ namespace DeterministicWorld.Network
         /// Send an update to the server that acknowledges that this client completed an update frame
         /// and informs it of any input that was given by this client
         /// </summary>
-        internal void sendFrameUpdate(dwFrameInput input)
+        internal void sendFrameUpdate(FrameInput input)
         {
             NetOutgoingMessage outMsg = netClient.CreateMessage();
 
@@ -239,7 +239,7 @@ namespace DeterministicWorld.Network
 
                 case (NetDataType.PlayerDisconnect):
                     long playerUID = inMsg.ReadInt64();
-                    dwPlayerData dcPlayer = clientWorld.getPlayerByUID(playerUID);
+                    PlayerData dcPlayer = clientWorld.getPlayerByUID(playerUID);
                     handlePlayerDisconnect(dcPlayer);
                     break;
 
@@ -265,7 +265,7 @@ namespace DeterministicWorld.Network
         /// </summary>
         private void readPlayerData(NetIncomingMessage inMsg)
         {
-            dwPlayerData newPlayer = new dwPlayerData();
+            PlayerData newPlayer = new PlayerData();
 
             newPlayer.deserialize(inMsg);
 
@@ -312,14 +312,14 @@ namespace DeterministicWorld.Network
                 onNetStatusChanged(newStatus);
         }
 
-        private void handlePlayerDisconnect(dwPlayerData dcPlayer)
+        private void handlePlayerDisconnect(PlayerData dcPlayer)
         {
             clientWorld.removePlayer(dcPlayer);
         }
         
         private void readFrameUpdateData(NetIncomingMessage inMsg)
         {
-            dwFrameInput input = new dwFrameInput();
+            FrameInput input = new FrameInput();
             input.deserialize(inMsg);
 
             clientWorld.addFrameInputData(input);

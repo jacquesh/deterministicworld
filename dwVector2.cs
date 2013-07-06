@@ -1,7 +1,5 @@
 ﻿using Lidgren.Network;
 
-using DeterministicWorld.Network;
-
 namespace DeterministicWorld
 {
     public class dwVector2 : dwISerializable

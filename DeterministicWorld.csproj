@@ -51,24 +51,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="dwWorld2D_OrderInput.cs" />
-    <Compile Include="Network\dwIIdentifiable.cs" />
+    <Compile Include="dwIndexible.cs" />
     <Compile Include="dwLog.cs" />
-    <Compile Include="Util\dwRandom.cs" />
+    <Compile Include="dwRandom.cs" />
     <Compile Include="dwWorld2D_Player.cs" />
-    <Compile Include="dwFrameInput.cs" />
-    <Compile Include="Util\dwIndexer.cs" />
-    <Compile Include="Network\dwClient.cs" />
-    <Compile Include="Network\dwISerializable.cs" />
+    <Compile Include="FrameInput.cs" />
+    <Compile Include="dwIndexer.cs" />
+    <Compile Include="Net\dwClient.cs" />
+    <Compile Include="dwISerializable.cs" />
     <Compile Include="dwObject2D.cs" />
     <Compile Include="dwVector2.cs" />
     <Compile Include="dwWorld2D.cs" />
-    <Compile Include="Orders\MoveOrder.cs" />
-    <Compile Include="dwOrder.cs" />
-    <Compile Include="dwOrderRegister.cs" />
-    <Compile Include="dwPlayerData.cs" />
+    <Compile Include="MoveOrder.cs" />
+    <Compile Include="Order.cs" />
+    <Compile Include="OrderRegister.cs" />
+    <Compile Include="PlayerData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Network\dwServer.cs" />
-    <Compile Include="Util\ReplayController.cs" />
+    <Compile Include="Net\dwServer.cs" />
+    <Compile Include="ReplayController.cs" />
     <Compile Include="SoftFloat.cs" />
     <Compile Include="dwWorldConstants.cs" />
   </ItemGroup>

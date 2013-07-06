@@ -5,14 +5,13 @@ using System.Collections.Generic;
 
 namespace DeterministicWorld
 {
-
     public abstract partial class dwWorld2D
     {
         public uint gameFrame
         {
             get { return currentFrame; }
         }
-
+        
         public event Action onWorldUpdate;
         
         private List<dwObject2D> objects;
@@ -20,14 +19,14 @@ namespace DeterministicWorld
         private uint currentFrame;
         private bool running;
         private bool paused;
-
+        
         private Thread simulationThread;
 
         //======================
         public dwWorld2D()
         {
             dwWorld2D._instance = this;
-
+            
             unindexedPlayers = new HashSet<dwPlayerData>();
             playerList = new dwPlayerData[dwWorldConstants.GAME_MAX_PLAYERS];
 
@@ -35,7 +34,7 @@ namespace DeterministicWorld
             playerCountDirty = false;
 
             objects = new List<dwObject2D>();
-
+            
             currentFrameInput = new dwFrameInput();
             currentFrame = 0;
             running = false;

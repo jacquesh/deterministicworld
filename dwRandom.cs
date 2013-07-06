@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DeterministicWorld.Util
+namespace DeterministicWorld
 {
     public class dwRandom
     {

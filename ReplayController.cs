@@ -2,14 +2,14 @@
 using System.Linq;
 using System.Text;
 
-namespace DeterministicWorld.Util
+namespace DeterministicWorld
 {
     class ReplayController
     {
         private dwWorld2D replayWorld;
-        private Dictionary<uint, dwFrameInput> replayInput;
+        private Dictionary<uint, FrameInput> replayInput;
 
-        public ReplayController(dwWorld2D world, Dictionary<uint,dwFrameInput> input)
+        public ReplayController(dwWorld2D world, Dictionary<uint,FrameInput> input)
         {
             replayWorld = world;
             replayInput = input;
@@ -25,10 +25,10 @@ namespace DeterministicWorld.Util
         {
             if (replayInput.ContainsKey(replayWorld.gameFrame))
             {
-                dwFrameInput input = replayInput[replayWorld.gameFrame];
+                FrameInput input = replayInput[replayWorld.gameFrame];
 
                 //Execute all orders/actions listed in input
-                foreach (dwOrder o in input.orderList)
+                foreach (Order o in input.orderList)
                 {
                 }
             }
