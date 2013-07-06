@@ -14,7 +14,7 @@ namespace DeterministicWorld
 
     public abstract class Order : dwISerializable
     {
-        internal dwObject2D owner;
+        protected internal dwObject2D owner;
 
         public TargetType targetType
         {

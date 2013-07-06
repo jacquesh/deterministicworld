@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="dwIndexible.cs" />
     <Compile Include="dwLog.cs" />
+    <Compile Include="dwRandom.cs" />
     <Compile Include="FrameInput.cs" />
     <Compile Include="dwIndexer.cs" />
     <Compile Include="Net\dwClient.cs" />

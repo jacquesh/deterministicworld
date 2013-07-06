@@ -88,7 +88,7 @@ namespace DeterministicWorld
         /// <summary>
         /// Runs a single game state update tick
         /// </summary>
-        public abstract void update();
+        protected abstract void update();
 
         //Serialization
         //=============
