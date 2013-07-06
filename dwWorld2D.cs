@@ -59,6 +59,8 @@ namespace DeterministicWorld
         //======================
         public dwWorld2D()
         {
+            dwWorld2D._instance = this;
+
             unindexedPlayers = new HashSet<PlayerData>();
             playerList = new PlayerData[dwWorldConstants.GAME_MAX_PLAYERS];
 
@@ -285,5 +287,12 @@ namespace DeterministicWorld
         //Abstract events
         protected abstract void worldStart();
         protected abstract void worldUpdate();
+
+        //Singleton data
+        private static dwWorld2D _instance = null;
+        public static dwWorld2D instance
+        {
+            get { return _instance; }
+        }
     }
 }
