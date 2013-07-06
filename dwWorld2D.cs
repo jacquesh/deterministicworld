@@ -26,7 +26,7 @@ namespace DeterministicWorld
         public dwWorld2D()
         {
             dwWorld2D._instance = this;
-            
+
             unindexedPlayers = new HashSet<dwPlayerData>();
             playerList = new dwPlayerData[dwWorldConstants.GAME_MAX_PLAYERS];
 

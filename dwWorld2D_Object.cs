@@ -21,7 +21,6 @@ namespace DeterministicWorld
             if (obj != null)
             {
                 objects.Remove(obj);
-                obj.destroy();
             }
         }
 

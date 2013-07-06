@@ -13,6 +13,8 @@ namespace DeterministicWorld
 
         public dwVector2 position;
 
+        private int lifeticksRemaining;
+
         private dwOrder currentOrder;
         private Queue<dwOrder> orderQueue;
 
@@ -42,9 +44,14 @@ namespace DeterministicWorld
             owner = owningPlayer;
         }
 
-        internal void destroy()
+        ~dwObject2D()
         {
             indexer.deindexObject(this);
+        }
+
+        public void AddTimedLife(int ticks)
+        {
+            lifeticksRemaining = ticks;
         }
 
         internal virtual void issueOrder(dwOrder newOrder)
@@ -82,6 +89,12 @@ namespace DeterministicWorld
 
         internal void update_internal()
         {
+            if (lifeticksRemaining > 0)
+                lifeticksRemaining--;
+
+            if (lifeticksRemaining == 0)
+                dwWorld2D.instance.removeObject(this);
+
             if(currentOrder != null)
                 currentOrder.OnUpdate();
 
