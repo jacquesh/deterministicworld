@@ -54,8 +54,9 @@ namespace DeterministicWorld.Network
             netThread.Join();
         }
 
-        //Initialization
-        //==============
+        //==========================
+        // Network control functions
+        //==========================
         public dwPlayerData initialize()
         {
             //Set up net connection
@@ -99,6 +100,18 @@ namespace DeterministicWorld.Network
         {
             disconnect();
             netClient.Shutdown("NetClient shutting down");
+        }
+
+        //Stats
+        //===========
+        public int getPing()
+        {
+            return (int)(netClient.ServerConnection.AverageRoundtripTime * 1000);
+        }
+
+        public NetConnectionStatistics getStats()
+        {
+            return netClient.ServerConnection.Statistics;
         }
 
         //Continual/Update functions
@@ -152,10 +165,6 @@ namespace DeterministicWorld.Network
 
             sendFrameUpdate(input);
         }
-
-        //==========================
-        // Network control functions
-        //==========================
 
         //Packet creation functions
         //=========================
