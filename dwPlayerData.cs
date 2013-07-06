@@ -1,22 +1,22 @@
 ﻿using System.Collections.Generic;
 
-using DeterministicWorld.Net;
-
 using Lidgren.Network;
+
+using DeterministicWorld.Network;
 
 namespace DeterministicWorld
 {
-    public class PlayerData : dwISerializable
+    public class dwPlayerData : dwISerializable
     {
         public string name;
         public int index;
         public long uid;
 
-        public PlayerData() : this("")
+        public dwPlayerData() : this("")
         {
         }
 
-        public PlayerData(string playerName)
+        public dwPlayerData(string playerName)
         {
             index = -1;
             name = playerName;
@@ -36,9 +36,9 @@ namespace DeterministicWorld
 
         public override bool Equals(object obj)
         {
-            if (obj.GetType() == typeof(PlayerData))
+            if (obj.GetType() == typeof(dwPlayerData))
             {
-                if (uid == ((PlayerData)obj).uid)
+                if (uid == ((dwPlayerData)obj).uid)
                     return true;
             }
 

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace DeterministicWorld
+using DeterministicWorld.Network;
+
+namespace DeterministicWorld.Util
 {
-    internal class dwIndexer<T> where T : dwIdentifiable
+    internal class dwIndexer<T> where T : dwIIdentifiable
     {
         private static T[] indexedObjects;
         private static Queue<int> freeIds;

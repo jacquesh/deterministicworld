@@ -1,6 +1,6 @@
-﻿namespace DeterministicWorld
+﻿namespace DeterministicWorld.Network
 {
-    interface dwIdentifiable
+    interface dwIIdentifiable
     {
         int id
         {

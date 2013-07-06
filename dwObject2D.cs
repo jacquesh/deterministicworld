@@ -2,16 +2,19 @@
 
 using Lidgren.Network;
 
+using DeterministicWorld.Util;
+using DeterministicWorld.Network;
+
 namespace DeterministicWorld
 {
-    public abstract class dwObject2D : dwIdentifiable
+    public abstract class dwObject2D : dwIIdentifiable
     {
-        public PlayerData owner;
+        public dwPlayerData owner;
 
         public dwVector2 position;
 
-        private Order currentOrder;
-        private Queue<Order> orderQueue;
+        private dwOrder currentOrder;
+        private Queue<dwOrder> orderQueue;
 
         public int id
         {
@@ -26,14 +29,14 @@ namespace DeterministicWorld
             indexer = new dwIndexer<dwObject2D>();
         }
 
-        public dwObject2D(PlayerData owningPlayer)
+        public dwObject2D(dwPlayerData owningPlayer)
         {
             if (owningPlayer == null)
                 throw new System.ArgumentNullException();
 
             indexer.indexObject(this);
 
-            orderQueue = new Queue<Order>();
+            orderQueue = new Queue<dwOrder>();
             position = new dwVector2(0, 0);
 
             owner = owningPlayer;
@@ -44,7 +47,7 @@ namespace DeterministicWorld
             indexer.deindexObject(this);
         }
 
-        internal virtual void issueOrder(Order newOrder)
+        internal virtual void issueOrder(dwOrder newOrder)
         {
             if (orderQueue.Count == 0)
             {
@@ -62,7 +65,7 @@ namespace DeterministicWorld
             orderQueue.Clear();
         }
 
-        private void executeOrder(Order newOrder)
+        private void executeOrder(dwOrder newOrder)
         {
             currentOrder = newOrder;
             newOrder.owner = this;
@@ -92,10 +95,10 @@ namespace DeterministicWorld
 
         //Serialization
         //=============
+        //We never want to actually send an object over the network, we'd only need a reference to the object
+        //So we dont need to send all of this object's data, only its id
         public void serialize(NetOutgoingMessage outMsg)
         {
-            //We never want to actually send an object over the network, we'd only need a reference to the object
-            //So we dont need to send all of this object's data, only its id
             outMsg.Write(id);
         }
 

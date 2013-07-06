@@ -3,31 +3,33 @@ using System.Collections.Generic;
 
 using Lidgren.Network;
 
+using DeterministicWorld.Network;
+
 namespace DeterministicWorld
 {
-    internal class FrameInput : dwISerializable
+    internal class dwFrameInput : dwISerializable
     {
-        public List<Order> orderList;
+        public List<dwOrder> orderList;
         internal uint targetFrame;
 
-        public FrameInput()
+        public dwFrameInput()
         {
-            orderList = new List<Order>();
+            orderList = new List<dwOrder>();
             targetFrame = 0;
         }
 
-        public FrameInput(uint frameIndex)
+        public dwFrameInput(uint frameIndex)
         {
-            orderList = new List<Order>();
+            orderList = new List<dwOrder>();
             targetFrame = frameIndex;
         }
 
-        public void addOrder(Order issuedOrder)
+        public void addOrder(dwOrder issuedOrder)
         {
             orderList.Add(issuedOrder);
         }
 
-        public void mergeFrom(FrameInput other)
+        public void mergeFrom(dwFrameInput other)
         {
             orderList.AddRange(other.orderList);
         }
@@ -51,7 +53,7 @@ namespace DeterministicWorld
             for (int i = 0; i < orderList.Capacity; i++)
             {
                 int orderID = inMsg.ReadInt32();
-                Order newOrder = (Order)Activator.CreateInstance(OrderRegister.instance.idToOrder(orderID));
+                dwOrder newOrder = (dwOrder)Activator.CreateInstance(dwOrderRegister.instance.idToOrder(orderID));
                 newOrder.deserialize(inMsg);
                 
                 orderList.Add(newOrder);
