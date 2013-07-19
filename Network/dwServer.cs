@@ -36,7 +36,6 @@ namespace DeterministicWorld.Network
         public dwServer(dwWorld2D world)
         {
             dwLog.info("Initializing NetServer...");
-
             //Setup the connection between the server and the world
             serverWorld = world;
 

@@ -7,6 +7,13 @@ using Lidgren.Network;
 
 namespace DeterministicWorld.Network
 {
+
+    public enum dwConnectionStatus
+    {
+        Disconnected,
+        Connected
+    }
+
     public class dwClient
     {
         //Network event delegates
@@ -19,9 +26,18 @@ namespace DeterministicWorld.Network
         public event NetStatusChangedDelegate onNetStatusChanged;
 
         //Accessor Properties
-        public NetConnectionStatus connectionStatus
+        public dwConnectionStatus connectionStatus
         {
-            get { return _connectionStatus; }
+            get
+            {
+                switch (_connectionStatus)
+                {
+                    case (NetConnectionStatus.Connected):
+                        return dwConnectionStatus.Connected;
+                    default:
+                        return dwConnectionStatus.Disconnected;
+                }
+            }
         }
 
         //Network connection and settings
@@ -80,10 +96,10 @@ namespace DeterministicWorld.Network
             return localPlayer;
         }
 
-        public void connect()
+        public void connect(string ip)
         {
             NetOutgoingMessage loginMessage = getLoginMessage();
-            netClient.Connect("127.0.0.1", dwWorldConstants.GAME_NET_PORT, loginMessage);
+            netClient.Connect(ip, dwWorldConstants.GAME_NET_PORT, loginMessage);
 
             running = true;
             netThread.Start();
