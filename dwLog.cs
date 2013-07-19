@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 using log4net;
 using log4net.Config;
@@ -19,10 +20,21 @@ namespace DeterministicWorld
             string layoutPattern = "%message%newline";
             PatternLayout layout = new PatternLayout(layoutPattern);
 
-            ConsoleAppender appender = new ConsoleAppender();
+            ConsoleAppender cappender = new ConsoleAppender();
+            cappender.Layout = layout;
+
+            RollingFileAppender appender = new RollingFileAppender();
+            appender.File = Environment.CurrentDirectory+"\\warlogs.txt";
+            appender.ImmediateFlush = true;
+            appender.RollingStyle = RollingFileAppender.RollingMode.Once;
             appender.Layout = layout;
 
+            layout.ActivateOptions();
+            appender.ActivateOptions();
+            cappender.ActivateOptions();
+
             BasicConfigurator.Configure(appender);
+            BasicConfigurator.Configure(cappender);
         }
 
         public static void info(string msg)

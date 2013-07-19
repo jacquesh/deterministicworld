@@ -48,6 +48,7 @@ namespace DeterministicWorld
         {
             if (simulationThread == null)
             {
+                dwLog.debug("Starting simulation...");
                 running = true;
                 simulationThread = new Thread(threadStart);
                 simulationThread.Start();
