@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Collections.Generic;
 
 using DeterministicWorld.Orders;
+using DeterministicWorld.Util;
 
 namespace DeterministicWorld
 {
@@ -88,6 +89,9 @@ namespace DeterministicWorld
         
         private void update()
         {
+            //Update singleton components that require a frame update
+            dwTimer.instance.update();
+
             //Issue all of the scheduled orders
             if (inputData.ContainsKey(currentFrame))
             {
