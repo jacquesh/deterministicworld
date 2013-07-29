@@ -27,21 +27,6 @@ namespace DeterministicWorld
         public dwWorld2D()
         {
             dwWorld2D._instance = this;
-
-            unindexedPlayers = new HashSet<dwPlayerData>();
-            playerList = new dwPlayerData[dwWorldConstants.GAME_MAX_PLAYERS];
-
-            playerCountCached = 0;
-            playerCountDirty = false;
-
-            objects = new List<dwObject2D>();
-            
-            currentFrameInput = new dwFrameInput();
-            currentFrame = 0;
-            running = false;
-            paused = false;
-
-            inputData = new Dictionary<uint, dwFrameInput>();
         }
 
         //Simulation flow control
@@ -54,6 +39,9 @@ namespace DeterministicWorld
                 simulationThread = new Thread(threadStart);
                 simulationThread.Start();
             }
+
+            //Notify child classes of the start of the world
+            worldStart();
         }
 
         public void stopSimulation()
@@ -84,7 +72,21 @@ namespace DeterministicWorld
 
         private void initialize()
         {
-            worldStart();
+            //Set up world data
+            unindexedPlayers = new HashSet<dwPlayerData>();
+            playerList = new dwPlayerData[dwWorldConstants.GAME_MAX_PLAYERS];
+
+            playerCountCached = 0;
+            playerCountDirty = false;
+
+            objects = new List<dwObject2D>();
+
+            currentFrameInput = new dwFrameInput();
+            currentFrame = 0;
+            running = false;
+            paused = false;
+
+            inputData = new Dictionary<uint, dwFrameInput>();
         }
         
         private void update()

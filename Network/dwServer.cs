@@ -24,6 +24,11 @@ namespace DeterministicWorld.Network
 
     public class dwServer
     {
+        public bool isRunning
+        {
+            get { return running; }
+        }
+
         private Thread serverThread;
 
         private NetPeerConfiguration peerConfig;
@@ -48,14 +53,6 @@ namespace DeterministicWorld.Network
             //Create the server instance
             netServer = new NetServer(peerConfig);
             running = false;
-
-            //Create the server thread
-            serverThread = new Thread(threadStart);
-        }
-
-        ~dwServer()
-        {
-            serverThread.Join();
         }
 
         //========================
@@ -63,20 +60,24 @@ namespace DeterministicWorld.Network
         //========================
         public void start()
         {
+            //Create the server thread
+            dwLog.info("Creating new server thread");
+            serverThread = new Thread(threadStart);
+
+            dwLog.info("Starting server thread");
             running = true;
             serverThread.Start();
-
-            while (running)
-            {
-                //Handle server console commands?
-                Console.ReadLine();
-            }
         }
 
         public void shutdown()
         {
+            dwLog.info("Shutting down network server");
             running = false;
             netServer.Shutdown("Server shut down");
+
+            dwLog.info("Shutting down server thread");
+            serverThread.Join();
+            dwLog.info("Server thread successfully shut down");
         }
 
         //======================
@@ -84,7 +85,7 @@ namespace DeterministicWorld.Network
         //======================
         private void threadStart()
         {
-            dwLog.info("Starting NetServer...");
+            dwLog.info("Starting NetServer");
             netServer.Start();
             dwLog.info("NetServer Running with UID "+netServer.UniqueIdentifier);
 
