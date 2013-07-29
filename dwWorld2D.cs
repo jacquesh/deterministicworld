@@ -27,6 +27,8 @@ namespace DeterministicWorld
         public dwWorld2D()
         {
             dwWorld2D._instance = this;
+
+            initialize();
         }
 
         //Simulation flow control
@@ -58,8 +60,6 @@ namespace DeterministicWorld
         private void threadStart()
         {
             running = true;
-
-            initialize();
             while (running)
             {
                 if (!paused)
@@ -70,8 +70,10 @@ namespace DeterministicWorld
             }
         }
 
-        private void initialize()
+        public void initialize()
         {
+            dwLog.info("Initializing Game World");
+
             //Set up world data
             unindexedPlayers = new HashSet<dwPlayerData>();
             playerList = new dwPlayerData[dwWorldConstants.GAME_MAX_PLAYERS];
