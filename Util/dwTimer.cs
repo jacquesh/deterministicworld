@@ -22,36 +22,32 @@ namespace DeterministicWorld.Util
         }
     }
 
-    public class dwTimer
+    /// <summary>
+    /// The timer class allows for the running of actions with a specified delay
+    /// and/or at some predefined interval. One instance of this class is created by the world
+    /// and should generally not be instantiated otherwise. Rather use the wrappers 
+    /// provided by the world
+    /// </summary>
+    internal class dwTimer
     {
-
-        private static dwTimer _instance;
-
-        public static dwTimer instance
-        {
-            get 
-            {
-                if (_instance == null)
-                    _instance = new dwTimer();
-                return _instance; 
-            }
-        }
-
         private List<TimerData> timerList;
 
-        private dwTimer()
+        public dwTimer()
         {
             timerList = new List<TimerData>();
         }
 
-        public void createTimer(uint delay, bool recurring, Action callback)
+        public void createTimer(uint startFrame, uint intervalDelay, bool recurring, Action callback)
         {
             TimerData newTimerData = new TimerData();
-            newTimerData.delay = delay;
+            newTimerData.startFrame = startFrame;
+            newTimerData.delay = intervalDelay;
             newTimerData.recurring = recurring;
             newTimerData.onCallback += callback;
 
             timerList.Add(newTimerData);
+
+            dwLog.debug("Created new timer, we now have " + timerList.Count);
         }
 
         internal void update()
@@ -61,15 +57,17 @@ namespace DeterministicWorld.Util
                 TimerData timer = timerList[i];
                 if (timer.startFrame + timer.delay == dwWorld2D.instance.gameFrame)
                 {
+                    timer.callback();
+
                     if (timer.recurring)
                     {
                         timer.startFrame = dwWorld2D.instance.gameFrame;
                     }
-                }
-                else
-                {
-                    timerList.RemoveAt(i);
-                    i--;
+                    else
+                    {
+                        timerList.RemoveAt(i);
+                        i--;
+                    }
                 }
             }
         }
