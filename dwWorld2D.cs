@@ -23,6 +23,8 @@ namespace DeterministicWorld
         
         private Thread simulationThread;
 
+        private dwTimer timer;
+
         //======================
         public dwWorld2D()
         {
@@ -56,6 +58,12 @@ namespace DeterministicWorld
             }
         }
 
+        //Wrapper functions for internal systems
+        public void scheduleEvent(uint delay, bool recurring, Action callback)
+        {
+            timer.createTimer(currentFrame, delay, recurring, callback);
+        }
+
         //Internal functions
         private void threadStart()
         {
@@ -73,6 +81,8 @@ namespace DeterministicWorld
         public void initialize()
         {
             dwLog.info("Initializing Game World");
+
+            timer = new dwTimer();
 
             //Set up world data
             unindexedPlayers = new HashSet<dwPlayerData>();
@@ -94,7 +104,7 @@ namespace DeterministicWorld
         private void update()
         {
             //Update singleton components that require a frame update
-            dwTimer.instance.update();
+            timer.update();
 
             //Issue all of the scheduled orders
             if (inputData.ContainsKey(currentFrame))
